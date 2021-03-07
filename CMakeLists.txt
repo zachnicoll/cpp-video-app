@@ -11,8 +11,17 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 # Add GLFW subdir to the build
 add_subdirectory(lib/glfw)
 
-# Add FFmpeg subdir to the build
-add_subdirectory(lib/FFmpeg)
+# Find and add all ffmpeg libs to project
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
+    libavdevice
+    libavfilter
+    libavformat
+    libavcodec
+    # libswresample
+    libswscale
+    libavutil
+)
 
 # Need to include OpenGL as a library, different for each OS
 if(APPLE)
@@ -31,7 +40,7 @@ else()
 endif()
 
 # Add main.cpp to the executable
-add_executable(video_app src/main.cpp)
+add_executable(video_app src/main.cpp src/load_frame.cpp)
 
 # Link OpenGL libs and GLFW
-target_link_libraries(video_app FFmpeg glfw ${EXTRA_LIBS})
+target_link_libraries(video_app PkgConfig::LIBAV glfw ${EXTRA_LIBS})
