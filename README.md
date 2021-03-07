@@ -5,7 +5,7 @@ This repo is dedicated to messing about with `GLFW` and `ffmpeg` (and its associ
 Please feel free to take any of the code you find useful here - this project was started from [bartjoyce](https://github.com/bartjoyce)'s series of videos, starting [here](https://www.youtube.com/watch?v=A8jAKuPnFGg&ab_channel=Bartholomew).
 
 ## Dependencies
-You will run into various errors while trying to build and run this project you do not have these dependencies installed:
+You will run into various errors while trying to build and run this project if you do not have these dependencies installed:
 ```shell
 sudo apt-get update &&
 sudo apt-get install ffmpeg libavcodec-dev libavformat-dev libavdevice-dev libavfilter-dev libavutil-dev yasm pkg-config libglu1-mesa-dev freeglut3-dev mesa-common-dev libxi-dev libxcursor-dev libxinerama-dev libxrandr-dev libx11-dev doxygen
