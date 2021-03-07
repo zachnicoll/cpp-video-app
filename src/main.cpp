@@ -1,32 +1,12 @@
 #include <stdio.h>
-#include <GLFW/glfw3.h>
-#include <GL/gl.h>
-#include <stdint.h>
+#include "headers.h"
 
-/**
- * Reshape viewport on window resize 
- */
-void reshape( GLFWwindow* window, int w, int h )
+int main(int argc, const char **argv)
 {
-   glViewport( 0, 0, (GLsizei)w, (GLsizei)h );
-}
+  GLFWwindow *window;
 
-void init_params() {
-  // Need these params to render colour
-  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Method for downscaling image
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Method for upscaling image
-  glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-}
-
-bool load_frame(const char* filename, int* width, int* height, uint8_t** data);
-
-int main (int argc, const char** argv) {
-  GLFWwindow* window;
-
-  if (!glfwInit()) {
+  if (!glfwInit())
+  {
     printf("Couldn't initialise GLFW!");
     return 1;
   }
@@ -34,14 +14,16 @@ int main (int argc, const char** argv) {
   int window_width = 640;
   int window_height = 480;
 
-  window = glfwCreateWindow(window_width, window_height, "Hello World", NULL, NULL);
+  window = glfwCreateWindow(window_width, window_height, "CPP | OpenGL | ffmpeg", NULL, NULL);
   glfwSetFramebufferSizeCallback(window, reshape); // Handle window resize
   glfwMakeContextCurrent(window);
 
   int frame_width, frame_height;
-  uint8_t* frame_data;
+  uint8_t *frame_data;
+  const char *filename = "/home/zach/Desktop/vid.mp4"; // Change this to load a different file
 
-  if (!load_frame("/home/zach/Desktop/vid.mp4", &frame_width, &frame_height, &frame_data)) {
+  if (!load_frame(filename, &frame_width, &frame_height, &frame_data))
+  {
     printf("Couldn't load video frame!\n");
     return 1;
   }
@@ -59,10 +41,12 @@ int main (int argc, const char** argv) {
 
   init_params();
 
-  while (!glfwWindowShouldClose(window)) {
+  while (!glfwWindowShouldClose(window))
+  {
     // Clear screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+    
+    // Get current frame buffer size (window size) to correctly project texture
     int fb_w, fb_h;
     glfwGetFramebufferSize(window, &fb_w, &fb_h);
 
@@ -75,16 +59,9 @@ int main (int argc, const char** argv) {
     glMatrixMode(GL_MODELVIEW);
 
     // Render stuff
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, tex_handle);
-    glBegin(GL_QUADS);
-      glTexCoord2d(0, 0); glVertex2i(0, 0);
-      glTexCoord2d(1, 0); glVertex2i(frame_width/2, 0);
-      glTexCoord2d(1, 1); glVertex2i(frame_width/2, frame_height/2);
-      glTexCoord2d(0, 1); glVertex2i(0, frame_height/2);
-    glEnd();
-    glDisable(GL_TEXTURE_2D);
+    render_tex(&tex_handle, frame_width, frame_height, 0, 0, 2);
 
+    // Swap front and back render buffers
     glfwSwapBuffers(window);
     glfwWaitEvents();
   }

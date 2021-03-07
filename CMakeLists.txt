@@ -1,6 +1,6 @@
 # Project Settings
 cmake_minimum_required(VERSION 3.14)
-project(video_app C CXX)
+project(cpp-video-app C CXX)
 set(CMAKE_CXX_STANDARD 14)
 
 # Don't build GLFW docs, tests, & exmaples
@@ -40,7 +40,7 @@ else()
 endif()
 
 # Add main.cpp to the executable
-add_executable(video_app src/main.cpp src/load_frame.cpp)
+add_executable(cpp-video-app src/main.cpp src/load_frame.cpp src/helpers.cpp)
 
 # Link OpenGL libs and GLFW
-target_link_libraries(video_app PkgConfig::LIBAV glfw ${EXTRA_LIBS})
+target_link_libraries(cpp-video-app PkgConfig::LIBAV glfw ${EXTRA_LIBS})
