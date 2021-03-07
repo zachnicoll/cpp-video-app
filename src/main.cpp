@@ -11,6 +11,16 @@ void reshape( GLFWwindow* window, int w, int h )
    glViewport( 0, 0, (GLsizei)w, (GLsizei)h );
 }
 
+void init_params() {
+  // Need these params to render colour
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Method for downscaling image
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Method for upscaling image
+  glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+}
+
 bool load_frame(const char* filename, int* width, int* height, uint8_t** data);
 
 int main (int argc, const char** argv) {
@@ -47,13 +57,7 @@ int main (int argc, const char** argv) {
   // Create texture from pixel data
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frame_width, frame_height, 0, GL_RGB, GL_UNSIGNED_BYTE, frame_data);
 
-  // Need these params to render colour
-  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Method for downscaling image
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Method for upscaling image
-  glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+  init_params();
 
   while (!glfwWindowShouldClose(window)) {
     // Clear screen
@@ -75,9 +79,9 @@ int main (int argc, const char** argv) {
     glBindTexture(GL_TEXTURE_2D, tex_handle);
     glBegin(GL_QUADS);
       glTexCoord2d(0, 0); glVertex2i(0, 0);
-      glTexCoord2d(1, 0); glVertex2i(frame_width, 0);
-      glTexCoord2d(1, 1); glVertex2i(frame_width, frame_height);
-      glTexCoord2d(0, 1); glVertex2i(0, frame_height);
+      glTexCoord2d(1, 0); glVertex2i(frame_width/2, 0);
+      glTexCoord2d(1, 1); glVertex2i(frame_width/2, frame_height/2);
+      glTexCoord2d(0, 1); glVertex2i(0, frame_height/2);
     glEnd();
     glDisable(GL_TEXTURE_2D);
 
