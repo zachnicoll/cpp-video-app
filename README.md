@@ -2,16 +2,18 @@
 
 This repo is dedicated to messing about with GLFW and ffmpeg (and its associated libraries) inside C++ to view and manipulate video data. Potential use cases for this would be a video player, or video editing software.
 
-Please feel free to take any of the code you find useful here - this project was started from [https://github.com/bartjoyce/video-app](bartjoyce)'s series of videos, starting [https://www.youtube.com/watch?v=A8jAKuPnFGg&ab_channel=Bartholomew](here).
+Please feel free to take any of the code you find useful here - this project was started from [bartjoyce](https://github.com/bartjoyce) 's series of videos, starting [here](https://www.youtube.com/watch?v=A8jAKuPnFGg&ab_channel=Bartholomew) .
 
 ## Dependencies
 You will run into various errors while trying to build and run this project you do not have these dependencies installed:
 ```shell
 sudo apt-get update &&
-sudo apt-get install ffmpeg libavcodec-dev libavformat-dev libavdevice-dev libavfilter-dev libavutil-dev yasm pkg-config libglu1-mesa-dev freeglut3-dev mesa-common-dev libxi-dev libxcursor-dev libxinerama-dev libxrandr-dev libx11-dev doxygen
+sudo apt-get install ffmpeg libavcodec-dev libavformat-dev libavdevice-dev \\
+ libavfilter-dev libavutil-dev yasm pkg-config libglu1-mesa-dev freeglut3-dev \\ 
+ mesa-common-dev libxi-dev libxcursor-dev libxinerama-dev libxrandr-dev libx11-dev doxygen
 ```
 
-Make sure you have CMake installed, [https://cmake.org/install/](follow this guide).
+Make sure you have CMake installed, [follow this guide](https://cmake.org/install/).
 
 ## Clone
 This repo contains the submodule `glfw`. Be sure to clone that repo as well by running:
