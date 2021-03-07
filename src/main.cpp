@@ -3,6 +3,14 @@
 #include <GL/gl.h>
 #include <stdint.h>
 
+/**
+ * Reshape viewport on window resize 
+ */
+void reshape( GLFWwindow* window, int w, int h )
+{
+   glViewport( 0, 0, (GLsizei)w, (GLsizei)h );
+}
+
 int main (int argc, const char** argv) {
   GLFWwindow* window;
 
@@ -15,6 +23,7 @@ int main (int argc, const char** argv) {
   int window_height = 480;
 
   window = glfwCreateWindow(window_width, window_height, "Hello World", NULL, NULL);
+  glfwSetFramebufferSizeCallback(window, reshape); // Handle window resize
   glfwMakeContextCurrent(window);
 
   const int size = 100;
@@ -79,16 +88,6 @@ int main (int argc, const char** argv) {
       glTexCoord2d(1, 0); glVertex2i(size, 0);
       glTexCoord2d(1, 1); glVertex2i(size, size);
       glTexCoord2d(0, 1); glVertex2i(0, size);
-    glEnd();
-    glDisable(GL_TEXTURE_2D);
-
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, tex_handle);
-    glBegin(GL_QUADS);
-      glTexCoord2d(0, 0); glVertex2i(fb_w - size, fb_h - size);
-      glTexCoord2d(1, 0); glVertex2i(fb_w, fb_h - size);
-      glTexCoord2d(1, 1); glVertex2i(fb_w, fb_h);
-      glTexCoord2d(0, 1); glVertex2i(fb_w - size, fb_h);
     glEnd();
     glDisable(GL_TEXTURE_2D);
 

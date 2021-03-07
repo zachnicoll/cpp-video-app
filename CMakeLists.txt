@@ -11,6 +11,9 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 # Add GLFW subdir to the build
 add_subdirectory(lib/glfw)
 
+# Add FFmpeg subdir to the build
+add_subdirectory(lib/FFmpeg)
+
 # Need to include OpenGL as a library, different for each OS
 if(APPLE)
     list(APPEND EXTRA_LIBS
@@ -31,4 +34,4 @@ endif()
 add_executable(video_app src/main.cpp)
 
 # Link OpenGL libs and GLFW
-target_link_libraries(video_app glfw ${EXTRA_LIBS})
+target_link_libraries(video_app FFmpeg glfw ${EXTRA_LIBS})
