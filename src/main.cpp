@@ -55,7 +55,7 @@ int main (int argc, const char** argv) {
   glBindTexture(GL_TEXTURE_2D, tex_handle);
 
   // Create texture from pixel data
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frame_width, frame_height, 0, GL_RGB, GL_UNSIGNED_BYTE, frame_data);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame_width, frame_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, frame_data);
 
   init_params();
 
@@ -69,7 +69,7 @@ int main (int argc, const char** argv) {
     // Setup orthographic projection
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, fb_w, 0, fb_h, -1, 1);
+    glOrtho(0, fb_w, fb_h, 0, -1, 1);
 
     // Set matrix mode to model view so we can start rendering things
     glMatrixMode(GL_MODELVIEW);
