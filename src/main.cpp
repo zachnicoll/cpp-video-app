@@ -82,6 +82,7 @@ int main(int argc, const char **argv)
         &tex_handle,
         video_reader->width,
         video_reader->height,
+        // Position the texture in the middle of the window
         fb_w / 2 - video_reader->width / (2*inv_scale),
         fb_h / 2 - video_reader->height / (2*inv_scale),
         inv_scale);
