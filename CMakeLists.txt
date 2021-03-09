@@ -40,7 +40,7 @@ else()
 endif()
 
 # Add main.cpp to the executable
-add_executable(cpp-video-app src/main.cpp src/load_frame.cpp src/helpers.cpp)
+add_executable(cpp-video-app src/main.cpp src/helpers.cpp src/video_reader.cpp)
 
 # Link OpenGL libs and GLFW
 target_link_libraries(cpp-video-app PkgConfig::LIBAV glfw ${EXTRA_LIBS})

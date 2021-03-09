@@ -11,21 +11,22 @@ int main(int argc, const char **argv)
     return 1;
   }
 
-  int window_width = 640;
-  int window_height = 480;
+  int window_width = 1280;
+  int window_height = 720;
 
   window = glfwCreateWindow(window_width, window_height, "CPP | OpenGL | ffmpeg", NULL, NULL);
   glfwSetFramebufferSizeCallback(window, reshape); // Handle window resize
   glfwMakeContextCurrent(window);
 
-  int frame_width, frame_height;
   uint8_t *frame_data;
   const char *filename = "/home/zach/Desktop/vid.mp4"; // Change this to load a different file
 
-  if (!load_frame(filename, &frame_width, &frame_height, &frame_data))
+  VideoReader *video_reader = new VideoReader;
+
+  if (!video_reader_open(video_reader, filename))
   {
-    printf("Couldn't load video frame!\n");
-    return 1;
+    printf("Failed to initialise VideoReader!");
+    return false;
   }
 
   // Create texture handle
@@ -36,16 +37,31 @@ int main(int argc, const char **argv)
   // this is the texture GL will use to draw 2D now
   glBindTexture(GL_TEXTURE_2D, tex_handle);
 
-  // Create texture from pixel data
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame_width, frame_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, frame_data);
-
   init_params();
+
+  int err = 0;
 
   while (!glfwWindowShouldClose(window))
   {
+    /**
+     * If you don't do this, the previous frame's data will not be deallocated
+     * and you will lock up your PC
+     */
+    free(frame_data);
+
+    err = video_reader_next(video_reader, &frame_data);
+
+    if (err == AVERROR_EOF || (err != AVERROR(EAGAIN) && err < 0))
+    {
+      break;
+    }
+
+    // Create texture from pixel data
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, video_reader->width, video_reader->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, frame_data);
+
     // Clear screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
+
     // Get current frame buffer size (window size) to correctly project texture
     int fb_w, fb_h;
     glfwGetFramebufferSize(window, &fb_w, &fb_h);
@@ -59,12 +75,20 @@ int main(int argc, const char **argv)
     glMatrixMode(GL_MODELVIEW);
 
     // Render stuff
-    render_tex(&tex_handle, frame_width, frame_height, 0, 0, 2);
+    render_tex(
+        &tex_handle,
+        video_reader->width,
+        video_reader->height,
+        fb_w / 2 - video_reader->width / 4,
+        fb_h / 2 - video_reader->height / 4,
+        2);
 
     // Swap front and back render buffers
     glfwSwapBuffers(window);
-    glfwWaitEvents();
+    glfwPollEvents();
   }
+
+  video_reader_close(video_reader);
 
   return 0;
 }
