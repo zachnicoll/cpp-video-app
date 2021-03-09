@@ -1,5 +1,22 @@
 #include "headers.h"
 
+VideoReader * video_reader_init()
+{
+  VideoReader* videoReader = new VideoReader;
+  videoReader->av_codec = NULL;
+  videoReader->av_codec_ctx = NULL;
+  videoReader->av_codec_params = NULL;
+  videoReader->av_format_ctx = NULL;
+  videoReader->av_frame = NULL;
+  videoReader->av_packet = NULL;
+  videoReader->sws_scaler_ctx = NULL;
+  videoReader->width = 0;
+  videoReader->height = 0;
+  videoReader->video_stream_index = 0;
+
+  return videoReader;
+}
+
 bool video_reader_open(VideoReader *videoReader, const char *filename)
 {
   int err = 0;
@@ -79,6 +96,9 @@ bool video_reader_open(VideoReader *videoReader, const char *filename)
     return false;
   }
 
+  videoReader->width = videoReader->av_codec_ctx->width;
+  videoReader->height = videoReader->av_codec_ctx->height;
+
   return true;
 }
 
@@ -113,8 +133,15 @@ int video_reader_next(VideoReader *videoReader, uint8_t **data_out)
       }
     }
 
-    videoReader->width = videoReader->av_frame->width;
-    videoReader->height = videoReader->av_frame->height;
+    // We can allocate SwsContext now that we know the pix_fmt of the frame
+    if (!videoReader->sws_scaler_ctx)
+    {
+      videoReader->sws_scaler_ctx = sws_getContext(
+          videoReader->width, videoReader->height, videoReader->av_codec_ctx->pix_fmt, // Input formats
+          videoReader->width, videoReader->height, AV_PIX_FMT_RGBA,                    // Output formats
+          SWS_BILINEAR,
+          NULL, NULL, NULL);
+    }
 
     uint8_t *data = new uint8_t[videoReader->width * videoReader->height * 4];
 
@@ -147,7 +174,8 @@ void video_reader_close(VideoReader *videoReader)
   // Free up avcodec data
   avcodec_free_context(&videoReader->av_codec_ctx);
 
-  // if (videoReader->sws_scaler_ctx) {
-  //   sws_freeContext(videoReader->sws_scaler_ctx);
-  // }
+  if (videoReader->sws_scaler_ctx)
+  {
+    sws_freeContext(videoReader->sws_scaler_ctx);
+  }
 }

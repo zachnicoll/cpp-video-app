@@ -21,14 +21,27 @@ struct VideoReader
   AVCodecContext *av_codec_ctx;
   AVFrame *av_frame;
   AVPacket *av_packet;
-  // SwsContext* sws_scaler_ctx;
+  SwsContext *sws_scaler_ctx;
 };
 
-bool load_frame(const char *filename, int *width, int *height, uint8_t **data);
-void reshape(GLFWwindow *window, int w, int h);
-void render_tex(GLuint *texture_handle, int f_w, int f_h, int xpos, int ypos, int inv_scale);
-void init_params();
 bool handle_error(int err);
+
+/**
+ * Reshape viewport on window resize 
+ */
+void reshape(GLFWwindow *window, int w, int h);
+
+/**
+ * Render a 2D texture to the screen with given width and height, with bottom left corner at
+ * xpos and ypos. An inverse scale can be given to scale the texture, where a larger number
+ * will decrease the texture's size. E.g. inv_scale = 2 will halve the textures size.
+ */
+void render_tex(GLuint *texture_handle, int f_w, int f_h, float xpos, float ypos, float inv_scale);
+
+/**
+ * Initialise some recommended parameters for OpenGL
+ */
+void init_params();
 
 /**
  * Converts YUV data in videoReader->av_frame->data to RGBA
@@ -53,3 +66,9 @@ int video_reader_next(VideoReader *videoReader, uint8_t **data_out);
  * Frees all contexts in the VideoReader
  */
 void video_reader_close(VideoReader *videoReader);
+
+/**
+ * Allocates a VideoReader struct and fills it with NULL values
+ * @returns an allocated VideoReader struct
+ */
+VideoReader *video_reader_init();

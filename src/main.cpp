@@ -18,10 +18,10 @@ int main(int argc, const char **argv)
   glfwSetFramebufferSizeCallback(window, reshape); // Handle window resize
   glfwMakeContextCurrent(window);
 
-  uint8_t *frame_data;
-  const char *filename = "/home/zach/Desktop/vid.mp4"; // Change this to load a different file
+  uint8_t *frame_data = NULL;
+  const char *filename = "/home/zach/Desktop/vid3.mp4"; // Change this to load a different file
 
-  VideoReader *video_reader = new VideoReader;
+  VideoReader *video_reader = video_reader_init();
 
   if (!video_reader_open(video_reader, filename))
   {
@@ -40,6 +40,7 @@ int main(int argc, const char **argv)
   init_params();
 
   int err = 0;
+  float inv_scale = 1.5;
 
   while (!glfwWindowShouldClose(window))
   {
@@ -47,7 +48,9 @@ int main(int argc, const char **argv)
      * If you don't do this, the previous frame's data will not be deallocated
      * and you will lock up your PC
      */
-    free(frame_data);
+    if (frame_data) {
+      free(frame_data);
+    }
 
     err = video_reader_next(video_reader, &frame_data);
 
@@ -79,9 +82,9 @@ int main(int argc, const char **argv)
         &tex_handle,
         video_reader->width,
         video_reader->height,
-        fb_w / 2 - video_reader->width / 4,
-        fb_h / 2 - video_reader->height / 4,
-        2);
+        fb_w / 2 - video_reader->width / (2*inv_scale),
+        fb_h / 2 - video_reader->height / (2*inv_scale),
+        inv_scale);
 
     // Swap front and back render buffers
     glfwSwapBuffers(window);
