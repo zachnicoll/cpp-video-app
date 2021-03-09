@@ -35,8 +35,8 @@ rm -rf ./build && mkdir build && cd build && cmake .. && cpp-video-app
 - [x] Display the first frame of a video file in a window with GLFW and OpenGL
 - [x] Play a video file from start to finish (unsynchronised)
 - [ ] Play a video file, synchronised to its correct frame rate
-- [ ] Processing and rendering of video frames occuring of different threads
+- [ ] Processing and rendering o video frames occuring on different threads
 - [ ] Play audio synchronised with video
 - [ ] Play/Pause button and functionality
-- [ ] Seeking (move forward or backwards through video) UI element and functionality
+- [ ] Seeking (move forward or backwards through video) GUI element and functionality
 - [ ] Full mock video player GUI in OpenGL (for fun)
