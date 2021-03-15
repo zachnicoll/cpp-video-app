@@ -1,8 +1,5 @@
 #include "headers.h"
 
-/**
- * Reshape viewport on window resize 
- */
 void reshape(GLFWwindow *window, int w, int h)
 {
   glViewport(0, 0, (GLsizei)w, (GLsizei)h);
@@ -43,17 +40,26 @@ bool handle_error(int err)
   return false;
 }
 
-bool yuv_to_rgba(VideoReader *videoReader, uint8_t *data_out)
+bool yuv_to_rgba(VideoReader *video_reader, uint8_t *data_out)
 {
-  if (!videoReader->sws_scaler_ctx)
+  if (!video_reader->sws_scaler_ctx)
   {
     printf("Couldn't get SwsContext!\n");
     return false;
   }
 
   uint8_t *dest[4] = {data_out, 0, 0, 0};
-  int dest_linesize[4] = {videoReader->width * 4, 0, 0, 0};
-  sws_scale(videoReader->sws_scaler_ctx, videoReader->av_frame->data, videoReader->av_frame->linesize, 0, videoReader->height, dest, dest_linesize);
+  int dest_linesize[4] = {video_reader->width * 4, 0, 0, 0};
+  sws_scale(video_reader->sws_scaler_ctx, video_reader->av_frame->data, video_reader->av_frame->linesize, 0, video_reader->height, dest, dest_linesize);
 
   return true;
+}
+
+GLFWwindow* init_window(int w, int h, const char* title) {
+    GLFWwindow *window;
+
+    window = glfwCreateWindow(w, h, title, NULL, NULL);
+    glfwSetFramebufferSizeCallback(window, reshape); // Handle window resize
+    glfwMakeContextCurrent(window);
+    return window;
 }

@@ -2,27 +2,27 @@
 
 VideoReader * video_reader_init()
 {
-  VideoReader* videoReader = new VideoReader;
-  videoReader->av_codec = NULL;
-  videoReader->av_codec_ctx = NULL;
-  videoReader->av_codec_params = NULL;
-  videoReader->av_format_ctx = NULL;
-  videoReader->av_frame = NULL;
-  videoReader->av_packet = NULL;
-  videoReader->sws_scaler_ctx = NULL;
-  videoReader->width = 0;
-  videoReader->height = 0;
-  videoReader->video_stream_index = 0;
+  VideoReader* video_reader = new VideoReader;
+  video_reader->av_codec = NULL;
+  video_reader->av_codec_ctx = NULL;
+  video_reader->av_codec_params = NULL;
+  video_reader->av_format_ctx = NULL;
+  video_reader->av_frame = NULL;
+  video_reader->av_packet = NULL;
+  video_reader->sws_scaler_ctx = NULL;
+  video_reader->width = 0;
+  video_reader->height = 0;
+  video_reader->video_stream_index = 0;
 
-  return videoReader;
+  return video_reader;
 }
 
-bool video_reader_open(VideoReader *videoReader, const char *filename)
+bool video_reader_open(VideoReader *video_reader, const char *filename)
 {
   int err = 0;
 
-  videoReader->av_format_ctx = avformat_alloc_context();
-  if (!videoReader->av_format_ctx)
+  video_reader->av_format_ctx = avformat_alloc_context();
+  if (!video_reader->av_format_ctx)
   {
     printf("Could not allocate AVFormatContext!\n");
     return false;
@@ -33,86 +33,86 @@ bool video_reader_open(VideoReader *videoReader, const char *filename)
   avcodec_register_all();
 
   // Open video file stream and header metadata into av_format_ctx
-  if ((err = avformat_open_input(&videoReader->av_format_ctx, filename, NULL, NULL)) != 0)
+  if ((err = avformat_open_input(&video_reader->av_format_ctx, filename, NULL, NULL)) != 0)
   {
     printf("Couldn't open video file!\n");
     return handle_error(err);
   }
 
-  videoReader->video_stream_index = -1;
+  video_reader->video_stream_index = -1;
 
   // Find video stream that has valid decoder
-  for (int i = 0; i < videoReader->av_format_ctx->nb_streams; i++)
+  for (int i = 0; i < video_reader->av_format_ctx->nb_streams; i++)
   {
-    videoReader->av_codec_params = videoReader->av_format_ctx->streams[i]->codecpar; // Codec parameters associated with stream
-    videoReader->av_codec = avcodec_find_decoder(videoReader->av_codec_params->codec_id);
+    video_reader->av_codec_params = video_reader->av_format_ctx->streams[i]->codecpar; // Codec parameters associated with stream
+    video_reader->av_codec = avcodec_find_decoder(video_reader->av_codec_params->codec_id);
 
-    if (!videoReader->av_codec)
+    if (!video_reader->av_codec)
     {
       // Keep looking for a stream that has a decoder
       continue;
     }
 
     // If stream type is a video, we've found the right stream
-    if (videoReader->av_codec_params->codec_type == AVMEDIA_TYPE_VIDEO)
+    if (video_reader->av_codec_params->codec_type == AVMEDIA_TYPE_VIDEO)
     {
-      videoReader->video_stream_index = i;
+      video_reader->video_stream_index = i;
       break;
     }
   }
 
-  if (videoReader->video_stream_index == -1)
+  if (video_reader->video_stream_index == -1)
   {
     printf("Could not find valid video stream!\n");
     return false;
   }
 
   // Set up a codec context for the decoder
-  videoReader->av_codec_ctx = avcodec_alloc_context3(videoReader->av_codec);
-  if (!videoReader->av_codec_ctx)
+  video_reader->av_codec_ctx = avcodec_alloc_context3(video_reader->av_codec);
+  if (!video_reader->av_codec_ctx)
   {
     printf("Coudn't create AVCodecContext!\n");
     return false;
   }
 
-  if ((err = avcodec_parameters_to_context(videoReader->av_codec_ctx, videoReader->av_codec_params)) < 0)
+  if ((err = avcodec_parameters_to_context(video_reader->av_codec_ctx, video_reader->av_codec_params)) < 0)
   {
     printf("Coudn't init AVCodecContext!\n");
     return handle_error(err);
   }
 
-  if ((err = avcodec_open2(videoReader->av_codec_ctx, videoReader->av_codec, NULL)) < 0)
+  if ((err = avcodec_open2(video_reader->av_codec_ctx, video_reader->av_codec, NULL)) < 0)
   {
     printf("Couldn't open codec\n");
     return handle_error(err);
   }
 
-  videoReader->av_frame = av_frame_alloc();
-  videoReader->av_packet = av_packet_alloc();
+  video_reader->av_frame = av_frame_alloc();
+  video_reader->av_packet = av_packet_alloc();
 
-  if (!videoReader->av_frame || !videoReader->av_packet)
+  if (!video_reader->av_frame || !video_reader->av_packet)
   {
     printf("Couldn't allocate AVFrame or AVPacket!\n");
     return false;
   }
 
-  videoReader->width = videoReader->av_codec_ctx->width;
-  videoReader->height = videoReader->av_codec_ctx->height;
+  video_reader->width = video_reader->av_codec_ctx->width;
+  video_reader->height = video_reader->av_codec_ctx->height;
 
   return true;
 }
 
-int video_reader_next(VideoReader *videoReader, uint8_t **data_out)
+int video_reader_next(VideoReader *video_reader, uint8_t **data_out)
 {
   int err = 0;
 
   // Read the next frame from the stream
-  if (av_read_frame(videoReader->av_format_ctx, videoReader->av_packet) >= 0)
+  if (av_read_frame(video_reader->av_format_ctx, video_reader->av_packet) >= 0)
   {
-    if (videoReader->av_packet->stream_index == videoReader->video_stream_index)
+    if (video_reader->av_packet->stream_index == video_reader->video_stream_index)
     {
       // Supply decoder with raw packet data
-      if ((err = avcodec_send_packet(videoReader->av_codec_ctx, videoReader->av_packet)) < 0)
+      if ((err = avcodec_send_packet(video_reader->av_codec_ctx, video_reader->av_packet)) < 0)
       {
         printf("Failed to decode packet!\n");
         handle_error(err);
@@ -120,7 +120,7 @@ int video_reader_next(VideoReader *videoReader, uint8_t **data_out)
       }
 
       // Get decoded frame from the decoder
-      err = avcodec_receive_frame(videoReader->av_codec_ctx, videoReader->av_frame);
+      err = avcodec_receive_frame(video_reader->av_codec_ctx, video_reader->av_frame);
       if (err == AVERROR(EAGAIN) || err == AVERROR_EOF)
       {
         return err;
@@ -134,19 +134,19 @@ int video_reader_next(VideoReader *videoReader, uint8_t **data_out)
     }
 
     // We can allocate SwsContext now that we know the pix_fmt of the frame
-    if (!videoReader->sws_scaler_ctx)
+    if (!video_reader->sws_scaler_ctx)
     {
-      videoReader->sws_scaler_ctx = sws_getContext(
-          videoReader->width, videoReader->height, videoReader->av_codec_ctx->pix_fmt, // Input formats
-          videoReader->width, videoReader->height, AV_PIX_FMT_RGBA,                    // Output formats
+      video_reader->sws_scaler_ctx = sws_getContext(
+          video_reader->width, video_reader->height, video_reader->av_codec_ctx->pix_fmt, // Input formats
+          video_reader->width, video_reader->height, AV_PIX_FMT_RGBA,                    // Output formats
           SWS_BILINEAR,
           NULL, NULL, NULL);
     }
 
-    uint8_t *data = new uint8_t[videoReader->width * videoReader->height * 4];
+    uint8_t *data = new uint8_t[video_reader->width * video_reader->height * 4];
 
     // Convert YUV frame colour data to RGBA
-    if (!yuv_to_rgba(videoReader, data))
+    if (!yuv_to_rgba(video_reader, data))
     {
       return -1;
     }
@@ -161,21 +161,21 @@ int video_reader_next(VideoReader *videoReader, uint8_t **data_out)
   }
 }
 
-void video_reader_close(VideoReader *videoReader)
+void video_reader_close(VideoReader *video_reader)
 {
   // Free up avformat data
-  avformat_close_input(&videoReader->av_format_ctx);
-  avformat_free_context(videoReader->av_format_ctx);
+  avformat_close_input(&video_reader->av_format_ctx);
+  avformat_free_context(video_reader->av_format_ctx);
 
   // Free up packet and frame data
-  av_frame_free(&videoReader->av_frame);
-  av_packet_free(&videoReader->av_packet);
+  av_frame_free(&video_reader->av_frame);
+  av_packet_free(&video_reader->av_packet);
 
   // Free up avcodec data
-  avcodec_free_context(&videoReader->av_codec_ctx);
+  avcodec_free_context(&video_reader->av_codec_ctx);
 
-  if (videoReader->sws_scaler_ctx)
+  if (video_reader->sws_scaler_ctx)
   {
-    sws_freeContext(videoReader->sws_scaler_ctx);
+    sws_freeContext(video_reader->sws_scaler_ctx);
   }
 }

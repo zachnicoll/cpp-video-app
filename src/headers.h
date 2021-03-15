@@ -44,31 +44,37 @@ void render_tex(GLuint *texture_handle, int f_w, int f_h, float xpos, float ypos
 void init_params();
 
 /**
- * Converts YUV data in videoReader->av_frame->data to RGBA
+ * Converts YUV data in video_reader->av_frame->data to RGBA
  * for displaying on an OpenGL texture
  * @returns true if successful
  */
-bool yuv_to_rgba(VideoReader *videoReader, uint8_t *data_out);
+bool yuv_to_rgba(VideoReader *video_reader, uint8_t *data_out);
 
 /**
  * Initialises all contexts for the VideoReader
  * @returns true if intialisation succeeds
  */
-bool video_reader_open(VideoReader *videoReader, const char *filename);
+bool video_reader_open(VideoReader *video_reader, const char *filename);
 
 /**
  * Reads and decodes the next frame in the video file into data_out
  * @returns error code, 0 means success, -1 or other averror code on failure
  **/
-int video_reader_next(VideoReader *videoReader, uint8_t **data_out);
+int video_reader_next(VideoReader *video_reader, uint8_t **data_out);
 
 /**
  * Frees all contexts in the VideoReader
  */
-void video_reader_close(VideoReader *videoReader);
+void video_reader_close(VideoReader *video_reader);
 
 /**
  * Allocates a VideoReader struct and fills it with NULL values
  * @returns an allocated VideoReader struct
  */
 VideoReader *video_reader_init();
+
+/**
+ * Initialise a GLFW window with width, height, and title
+ * @returns pointer to window object
+ */
+GLFWwindow* init_window(int w, int h, const char* title);
