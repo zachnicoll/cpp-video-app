@@ -2,6 +2,8 @@
 
 #include <GLFW/glfw3.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <iostream>
 
 extern "C"
 {
@@ -9,6 +11,14 @@ extern "C"
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
 }
+
+#define MAX_QUEUE_LENGTH 100
+
+struct FrameNode
+{
+  uint8_t *frame_data;
+  FrameNode *next_frame;
+};
 
 struct VideoReader
 {
@@ -22,6 +32,8 @@ struct VideoReader
   AVFrame *av_frame;
   AVPacket *av_packet;
   SwsContext *sws_scaler_ctx;
+  FrameNode *frame_queue;
+  int frame_queue_length;
 };
 
 bool handle_error(int err);
@@ -60,7 +72,7 @@ bool video_reader_open(VideoReader *video_reader, const char *filename);
  * Reads and decodes the next frame in the video file into data_out
  * @returns error code, 0 means success, -1 or other averror code on failure
  **/
-int video_reader_next(VideoReader *video_reader, uint8_t **data_out);
+int video_reader_next(VideoReader *video_reader);
 
 /**
  * Frees all contexts in the VideoReader
@@ -77,4 +89,12 @@ VideoReader *video_reader_init();
  * Initialise a GLFW window with width, height, and title
  * @returns pointer to window object
  */
-GLFWwindow* init_window(int w, int h, const char* title);
+GLFWwindow *init_window(int w, int h, const char *title);
+
+void frame_queue_push(VideoReader *video_reader, uint8_t *new_frame);
+
+void frame_queue_consume(VideoReader *video_reader, FrameNode **node_out);
+
+void frame_queue_cleanup_node(FrameNode *node);
+
+void frame_queue_cleanup(FrameNode *node);

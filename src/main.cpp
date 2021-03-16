@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "headers.h"
 
 /* GLOBALS */
@@ -8,6 +7,17 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 {
   if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
     play_video = !play_video;
+}
+
+void mouse_click_callback(GLFWwindow *window, int button, int action, int mods)
+{
+  if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS)
+  {
+    double xpos, ypos;
+    //getting cursor position
+    glfwGetCursorPos(window, &xpos, &ypos);
+    std::cout << "Cursor Position at " << xpos << "," << ypos << std::endl;
+  }
 }
 
 int main(int argc, const char **argv)
@@ -25,7 +35,9 @@ int main(int argc, const char **argv)
   // Handle key events
   glfwSetKeyCallback(window, key_callback);
 
-  uint8_t *frame_data = NULL;
+  glfwSetMouseButtonCallback(window, mouse_click_callback);
+
+  FrameNode *frame_node = NULL;
   const char *filename = "/home/zach/Desktop/vid3.mp4"; // Change this to load a different file
 
   VideoReader *video_reader = video_reader_init();
@@ -53,29 +65,35 @@ int main(int argc, const char **argv)
 
   while (!glfwWindowShouldClose(window))
   {
+    err = video_reader_next(video_reader);
+
+    if (err == AVERROR_EOF || (err != AVERROR(EAGAIN) && err < 0))
+    {
+      break;
+    }
+
     if (play_video)
     {
       /**
      * If you don't do this, the previous frame's data will not be deallocated
      * and you will lock up your PC
      */
-      if (frame_data != NULL)
+      if (frame_node != NULL)
       {
-        free(frame_data);
-        frame_data = NULL;
+        frame_queue_cleanup_node(frame_node);
       }
-      err = video_reader_next(video_reader, &frame_data);
 
-      if (err == AVERROR_EOF || (err != AVERROR(EAGAIN) && err < 0))
-      {
-        break;
-      }
+      frame_queue_consume(video_reader, &frame_node);
     }
 
-    // Create texture from pixel data
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, video_reader->width, video_reader->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, frame_data);
+    if (frame_node != NULL)
+    {
+      // Create texture from pixel data
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, video_reader->width, video_reader->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, frame_node->frame_data);
+    }
 
     // Clear screen
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Get current frame buffer size (window size) to correctly project texture
@@ -99,6 +117,17 @@ int main(int argc, const char **argv)
         fb_w / 2 - video_reader->width / (2 * inv_scale),
         fb_h / 2 - video_reader->height / (2 * inv_scale),
         inv_scale);
+
+    /* Drawing a line, use for gui later
+    glPointSize(10);
+    glLineWidth(2.5);
+    glColor3f(1.0, 0.0, 0.0);
+    glBegin(GL_LINES);
+    glVertex3f(10.0, 10.0, 0.0);
+    glVertex3f(50.0, 20.0, 0.0);
+    glEnd();
+    glColor3f(1.0, 1.0, 1.0);
+    */
 
     // Swap front and back render buffers
     glfwSwapBuffers(window);

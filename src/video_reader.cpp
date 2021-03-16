@@ -14,6 +14,12 @@ VideoReader * video_reader_init()
   video_reader->height = 0;
   video_reader->video_stream_index = 0;
 
+  video_reader->frame_queue = new FrameNode;
+  video_reader->frame_queue->frame_data = NULL;
+  video_reader->frame_queue->next_frame = NULL;
+
+  video_reader->frame_queue_length = 0;
+
   return video_reader;
 }
 
@@ -102,8 +108,12 @@ bool video_reader_open(VideoReader *video_reader, const char *filename)
   return true;
 }
 
-int video_reader_next(VideoReader *video_reader, uint8_t **data_out)
+int video_reader_next(VideoReader *video_reader)
 {
+  if (video_reader->frame_queue_length >= MAX_QUEUE_LENGTH) {
+    return 0;
+  }
+
   int err = 0;
 
   // Read the next frame from the stream
@@ -151,7 +161,7 @@ int video_reader_next(VideoReader *video_reader, uint8_t **data_out)
       return -1;
     }
 
-    *data_out = data;
+    frame_queue_push(video_reader, data);
 
     return 0;
   }
@@ -178,4 +188,6 @@ void video_reader_close(VideoReader *video_reader)
   {
     sws_freeContext(video_reader->sws_scaler_ctx);
   }
+
+  frame_queue_cleanup(video_reader->frame_queue);
 }
