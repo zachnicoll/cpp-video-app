@@ -38,7 +38,7 @@ int main(int argc, const char **argv)
   glfwSetMouseButtonCallback(window, mouse_click_callback);
 
   FrameNode *frame_node = NULL;
-  const char *filename = "/home/zach/Desktop/vid3.mp4"; // Change this to load a different file
+  const char *filename = "/home/zach/Desktop/vid.mp4"; // Change this to load a different file
 
   VideoReader *video_reader = video_reader_init();
 
@@ -58,6 +58,18 @@ int main(int argc, const char **argv)
   glBindTexture(GL_TEXTURE_2D, tex_handle);
 
   init_params();
+
+  // Start loading frames from the video on another thread
+  pthread_t frame_loading_thread;
+  int rc;
+  rc = pthread_create(&frame_loading_thread, NULL, load_frames_thread, video_reader);
+
+  if (rc)
+  {
+    printf("Failed to create frame-loading thread, aborting!");
+    return (-1);
+  }
+
   /* SETUP END */
 
   int err = 0;
@@ -65,13 +77,6 @@ int main(int argc, const char **argv)
 
   while (!glfwWindowShouldClose(window))
   {
-    err = video_reader_next(video_reader);
-
-    if (err == AVERROR_EOF || (err != AVERROR(EAGAIN) && err < 0))
-    {
-      break;
-    }
-
     if (play_video)
     {
       /**

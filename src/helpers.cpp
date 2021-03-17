@@ -55,11 +55,30 @@ bool yuv_to_rgba(VideoReader *video_reader, uint8_t *data_out)
   return true;
 }
 
-GLFWwindow* init_window(int w, int h, const char* title) {
-    GLFWwindow *window;
+GLFWwindow *init_window(int w, int h, const char *title)
+{
+  GLFWwindow *window;
 
-    window = glfwCreateWindow(w, h, title, NULL, NULL);
-    glfwSetFramebufferSizeCallback(window, reshape); // Handle window resize
-    glfwMakeContextCurrent(window);
-    return window;
+  window = glfwCreateWindow(w, h, title, NULL, NULL);
+  glfwSetFramebufferSizeCallback(window, reshape); // Handle window resize
+  glfwMakeContextCurrent(window);
+  return window;
+}
+
+void *load_frames_thread(void *vid_reader)
+{
+  VideoReader *video_reader;
+  video_reader = (VideoReader *)vid_reader;
+
+  while (true)
+  {
+    int err = video_reader_next(video_reader);
+
+    if (err == AVERROR_EOF || (err != AVERROR(EAGAIN) && err < 0))
+    {
+      break;
+    }
+  }
+
+  pthread_exit(NULL);
 }

@@ -45,7 +45,7 @@ void frame_queue_cleanup_node(FrameNode *node)
 
 void frame_queue_cleanup(FrameNode *node)
 {
-  if (node->frame_data != NULL) {
+  if (node != NULL && node->frame_data != NULL) {
     frame_queue_cleanup_node(node);
     frame_queue_cleanup(node->next_frame);
   }

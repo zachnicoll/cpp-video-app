@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <iostream>
+#include <pthread.h>
 
 extern "C"
 {
@@ -91,10 +92,33 @@ VideoReader *video_reader_init();
  */
 GLFWwindow *init_window(int w, int h, const char *title);
 
+// TODO: add docs for these functions
+
+/**
+ * Push a new frame data buffer to the supplied video_reader's frame_queue.
+ */
 void frame_queue_push(VideoReader *video_reader, uint8_t *new_frame);
 
+/**
+ * Consume a frame from the supplied video_reader's frame_queue and store
+ * it in node_out. The new head of the frame_queue becomes the next FrameNode
+ * in the queue. 
+ */
 void frame_queue_consume(VideoReader *video_reader, FrameNode **node_out);
 
+/**
+ * De-allocates the frame data associated with a FrameNode.
+ */
 void frame_queue_cleanup_node(FrameNode *node);
 
+/**
+ * Recursively de-allocates all frame data in an entire frame queue.
+ */
 void frame_queue_cleanup(FrameNode *node);
+
+/**
+ * Function for loading and queueing frames from a VideoReader on a separate
+ * thread. Although vid_reader is a void*, it is cast to a VideoReader inside
+ * the function.
+ */
+void *load_frames_thread(void *vid_reader);
