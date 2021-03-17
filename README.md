@@ -27,7 +27,7 @@ Using the CMake Tools VSCode extension makes building and debugging a lot easier
 Otherwise, manually build and run the executable with:
 
 ```shell
-rm -rf ./build && mkdir build && cd build && cmake .. && cpp-video-app
+mkdir build && cd build && cmake .. && cmake --build . && ./cpp-video-app
 
 ```
 
