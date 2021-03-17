@@ -139,9 +139,6 @@ int main(int argc, const char **argv)
     glfwPollEvents();
   }
 
-  // Make sure other thread has exited
-  pthread_join(frame_loading_thread, NULL);
-
   video_reader_close(video_reader);
 
   return 0;
