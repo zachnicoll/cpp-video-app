@@ -36,7 +36,13 @@ void frame_queue_push(VideoReader *video_reader, uint8_t *new_frame)
 // Assign a pointer to the first frame in the queue and remove that frame from the queue
 void frame_queue_consume(VideoReader *video_reader, FrameNode **node_out)
 {
-  if (video_reader->frame_queue_length > 0)
+  // Free the node's current frame data before assigning it new data
+  if (*node_out != NULL)
+  {
+    frame_queue_cleanup_node(*node_out);
+  }
+
+  if (video_reader->frame_queue_length > 0 && video_reader->frame_queue != NULL)
   {
     // Assign first frame in the queue to external pointer
     *node_out = video_reader->frame_queue;
@@ -51,6 +57,7 @@ void frame_queue_consume(VideoReader *video_reader, FrameNode **node_out)
 void frame_queue_cleanup_node(FrameNode *node)
 {
   free(node->frame_data);
+  node = NULL;
 }
 
 void frame_queue_cleanup(FrameNode *node)

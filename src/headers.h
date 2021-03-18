@@ -14,7 +14,7 @@ extern "C"
 #include <libswscale/swscale.h>
 }
 
-#define MAX_QUEUE_LENGTH 100
+#define MAX_QUEUE_LENGTH 50
 
 struct FrameNode
 {
