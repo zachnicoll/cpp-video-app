@@ -23,15 +23,13 @@ VideoReader * video_reader_init()
   return video_reader;
 }
 
-bool video_reader_open(VideoReader *video_reader, const char *filename)
+void video_reader_open(VideoReader *video_reader, const char *filename)
 {
-  int err = 0;
-
   video_reader->av_format_ctx = avformat_alloc_context();
   if (!video_reader->av_format_ctx)
   {
-    printf("Could not allocate AVFormatContext!\n");
-    return false;
+    VideoReaderException ex("Could not allocate AVFormatContext!");
+    throw ex;
   }
 
   // Need to enable all muxers, demuxers, and protocols
@@ -39,10 +37,10 @@ bool video_reader_open(VideoReader *video_reader, const char *filename)
   avcodec_register_all();
 
   // Open video file stream and header metadata into av_format_ctx
-  if ((err = avformat_open_input(&video_reader->av_format_ctx, filename, NULL, NULL)) != 0)
+  if (avformat_open_input(&video_reader->av_format_ctx, filename, NULL, NULL) != 0)
   {
-    printf("Couldn't open video file!\n");
-    return handle_error(err);
+    VideoReaderException ex("Couldn't open video file!");
+    throw ex;
   }
 
   video_reader->video_stream_index = -1;
@@ -69,28 +67,28 @@ bool video_reader_open(VideoReader *video_reader, const char *filename)
 
   if (video_reader->video_stream_index == -1)
   {
-    printf("Could not find valid video stream!\n");
-    return false;
+    VideoReaderException ex("Could not find valid video stream!");
+    throw ex;
   }
 
   // Set up a codec context for the decoder
   video_reader->av_codec_ctx = avcodec_alloc_context3(video_reader->av_codec);
   if (!video_reader->av_codec_ctx)
   {
-    printf("Coudn't create AVCodecContext!\n");
-    return false;
+    VideoReaderException ex("Coudn't create AVCodecContext!");
+    throw ex;
   }
 
-  if ((err = avcodec_parameters_to_context(video_reader->av_codec_ctx, video_reader->av_codec_params)) < 0)
+  if (avcodec_parameters_to_context(video_reader->av_codec_ctx, video_reader->av_codec_params) < 0)
   {
-    printf("Coudn't init AVCodecContext!\n");
-    return handle_error(err);
+    VideoReaderException ex("Coudn't init AVCodecContext!");
+    throw ex;
   }
 
-  if ((err = avcodec_open2(video_reader->av_codec_ctx, video_reader->av_codec, NULL)) < 0)
+  if (avcodec_open2(video_reader->av_codec_ctx, video_reader->av_codec, NULL) < 0)
   {
-    printf("Couldn't open codec\n");
-    return handle_error(err);
+    VideoReaderException ex("Couldn't open codec");
+    throw ex;
   }
 
   video_reader->av_frame = av_frame_alloc();
@@ -98,14 +96,12 @@ bool video_reader_open(VideoReader *video_reader, const char *filename)
 
   if (!video_reader->av_frame || !video_reader->av_packet)
   {
-    printf("Couldn't allocate AVFrame or AVPacket!\n");
-    return false;
+    VideoReaderException ex("Couldn't allocate AVFrame or AVPacket!");
+    throw ex;
   }
 
   video_reader->width = video_reader->av_codec_ctx->width;
   video_reader->height = video_reader->av_codec_ctx->height;
-
-  return true;
 }
 
 int video_reader_next(VideoReader *video_reader)

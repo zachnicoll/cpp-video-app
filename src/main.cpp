@@ -38,14 +38,14 @@ int main(int argc, const char **argv)
   glfwSetMouseButtonCallback(window, mouse_click_callback);
 
   FrameNode *frame_node = NULL;
-  const char *filename = "/home/zach/Desktop/vid.mp4"; // Change this to load a different file
+  const char *filename = "/home/zach/Desktop/vixd.mp4"; // Change this to load a different file
 
   VideoReader *video_reader = video_reader_init();
 
-  // Initialise video_reader and open file
-  if (!video_reader_open(video_reader, filename))
-  {
-    printf("Failed to initialise VideoReader!\n");
+  try {
+    video_reader_open(video_reader, filename);
+  } catch (std::exception& e) {
+    printf("An exception occured opening %s:\n%s", filename, e.what());
     return false;
   }
 

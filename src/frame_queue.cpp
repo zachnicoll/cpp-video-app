@@ -25,9 +25,7 @@ void frame_queue_push(VideoReader *video_reader, uint8_t *new_frame)
       node->frame_data = new_frame;
 
       // Set last node's next_frame to an empty FrameNode
-      node->next_frame = new FrameNode;
-      node->next_frame->frame_data = NULL;
-      node->next_frame->next_frame = NULL;
+      node->next_frame = new FrameNode{NULL, NULL};
     }
 
     // Increase queue length so we know how many frames there are
@@ -58,7 +56,8 @@ void frame_queue_cleanup_node(FrameNode *node)
 void frame_queue_cleanup(FrameNode *node)
 {
   // Recursively free all nodes in a frame queue
-  if (node != NULL && node->frame_data != NULL) {
+  if (node != NULL && node->frame_data != NULL)
+  {
     frame_queue_cleanup_node(node);
     frame_queue_cleanup(node->next_frame);
   }

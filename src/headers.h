@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <pthread.h>
+#include <exception>
 
 extern "C"
 {
@@ -65,9 +66,9 @@ bool yuv_to_rgba(VideoReader *video_reader, uint8_t *data_out);
 
 /**
  * Initialises all contexts for the VideoReader
- * @returns true if intialisation succeeds
+ * @throws exceptions based on which part of the function fails
  */
-bool video_reader_open(VideoReader *video_reader, const char *filename);
+void video_reader_open(VideoReader *video_reader, const char *filename);
 
 /**
  * Reads and decodes the next frame in the video file into data_out
@@ -122,3 +123,21 @@ void frame_queue_cleanup(FrameNode *node);
  * the function.
  */
 void *load_frames_thread(void *vid_reader);
+
+class VideoReaderException : public std::exception
+{
+public:
+  const char *reason;
+
+  VideoReaderException(const char *_reason)
+  {
+    reason = _reason;
+  }
+
+  virtual const char *what() const throw()
+  {
+    char *buff = new char[1024];
+    sprintf(buff, "VideoReaderException: %s\n", reason);
+    return buff;
+  }
+};
