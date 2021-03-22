@@ -107,26 +107,21 @@ int main(int argc, const char **argv)
     // Set matrix mode to model view so we can start rendering things
     glMatrixMode(GL_MODELVIEW);
 
+    // Render GUI
+    render_gui((float)fb_w, (float)fb_h);
+
+    float video_tex_width = (float)video_reader->width * 0.8;
+    float video_tex_height = (float)video_reader->height * 0.8;
+
     // Render stuff
     render_tex(
         &tex_handle,
-        video_reader->width,
-        video_reader->height,
+        video_tex_width,
+        video_tex_height,
         // Position the texture in the middle of the window
-        fb_w / 2 - video_reader->width / (2 * inv_scale),
-        fb_h / 2 - video_reader->height / (2 * inv_scale),
+        fb_w / 2 - video_tex_width / (2 * inv_scale),
+        125,
         inv_scale);
-
-    /* Drawing a line, use for gui later
-    glPointSize(10);
-    glLineWidth(2.5);
-    glColor3f(1.0, 0.0, 0.0);
-    glBegin(GL_LINES);
-    glVertex3f(10.0, 10.0, 0.0);
-    glVertex3f(50.0, 20.0, 0.0);
-    glEnd();
-    glColor3f(1.0, 1.0, 1.0);
-    */
 
     // Swap front and back render buffers
     glfwSwapBuffers(window);

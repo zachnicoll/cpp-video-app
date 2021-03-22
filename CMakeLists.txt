@@ -39,8 +39,16 @@ else()
     )
 endif()
 
+list(APPEND SOURCES
+  "src/main.cpp"
+  "src/helpers.cpp"
+  "src/video_reader.cpp"
+  "src/frame_queue.cpp"
+  "src/gui.cpp"
+)
+
 # Add main.cpp to the executable
-add_executable(cpp-video-app src/main.cpp src/helpers.cpp src/video_reader.cpp src/frame_queue.cpp)
+add_executable(cpp-video-app ${SOURCES})
 
 # Link OpenGL libs and GLFW
 target_link_libraries(cpp-video-app PkgConfig::LIBAV glfw ${EXTRA_LIBS})

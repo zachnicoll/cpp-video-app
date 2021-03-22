@@ -50,7 +50,7 @@ void reshape(GLFWwindow *window, int w, int h);
  * xpos and ypos. An inverse scale can be given to scale the texture, where a larger number
  * will decrease the texture's size. E.g. inv_scale = 2 will halve the textures size.
  */
-void render_tex(GLuint *texture_handle, int f_w, int f_h, float xpos, float ypos, float inv_scale);
+void render_tex(GLuint *texture_handle, float f_w, float f_h, float xpos, float ypos, float inv_scale);
 
 /**
  * Initialise some recommended parameters for OpenGL
@@ -123,6 +123,8 @@ void frame_queue_cleanup(FrameNode *node);
  * the function.
  */
 void *load_frames_thread(void *vid_reader);
+
+void render_gui(float window_width, float window_height);
 
 class VideoReaderException : public std::exception
 {

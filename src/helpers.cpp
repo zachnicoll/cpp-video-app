@@ -15,7 +15,7 @@ void init_params()
   glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 }
 
-void render_tex(GLuint *texture_handle, int f_w, int f_h, float xpos, float ypos, float inv_scale)
+void render_tex(GLuint *texture_handle, float f_w, float f_h, float xpos, float ypos, float inv_scale)
 {
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, *texture_handle);
