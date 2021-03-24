@@ -1,4 +1,4 @@
-#include "headers.h"
+#include "../headers.h"
 
 // Add new frame to end of frame queue
 void frame_queue_push(VideoReader *video_reader, uint8_t *new_frame)

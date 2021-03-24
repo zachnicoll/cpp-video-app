@@ -14,33 +14,39 @@ void mouse_click_callback(GLFWwindow *window, int button, int action, int mods)
   if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS)
   {
     double xpos, ypos;
-    //getting cursor position
     glfwGetCursorPos(window, &xpos, &ypos);
     std::cout << "Cursor Position at " << xpos << "," << ypos << std::endl;
 
     Rect *clicked_element = handle_gui_click(xpos, ypos);
-    if (clicked_element != NULL) {
-      std::cout << "Clicked element with x1,y1,x2,y2: " << clicked_element->x1 << ',' << clicked_element->x2 << ',' << clicked_element->y1 << ',' << clicked_element->y2 << std::endl;
+    if (clicked_element != NULL)
+    {
+      std::cout << 
+      "Clicked element with x1, y1, x2, y2: " 
+      << clicked_element->x1 << ", "
+      << clicked_element->y1 << ", "
+      << clicked_element->x2 << ", "
+      << clicked_element->y2 << std::endl;
     }
   }
 }
 
-void render_loop(GLFWwindow *window, VideoReader *video_reader)
+void render_loop(GLFWwindow *window, int window_width, int window_height, VideoReader *video_reader)
 {
-  GLuint tex_handle; // Texture handle
+  GLuint tex_handle;            // Texture handle
   FrameNode *frame_node = NULL; // Current frame node ptr
-  float inv_scale = 1.5; // Scale video width and height
+  float inv_scale = 1.5;        // Scale video width and height
 
   glGenTextures(1, &tex_handle);
   glBindTexture(GL_TEXTURE_2D, tex_handle); // Bind texture handle to GL_TEXTURE_2D, this is the texture GL will use to draw 2D now
 
-  init_params();
+  init_params();                         // Initialise OpenGL params
+  init_gui(window_width, window_height); // Allocate and create all GUI objects
 
   while (!glfwWindowShouldClose(window))
   {
     if (play_video)
     {
-      frame_queue_consume(video_reader, &frame_node);
+      frame_queue_consume(video_reader, &frame_node); // Load frame into ptr
     }
 
     if (frame_node != NULL)
@@ -89,7 +95,7 @@ void render_loop(GLFWwindow *window, VideoReader *video_reader)
 
 int main(int argc, const char **argv)
 {
-  /* SETUP START */
+  /* SETUP */
   if (!glfwInit())
   {
     printf("Couldn't initialise GLFW!");
@@ -103,7 +109,7 @@ int main(int argc, const char **argv)
   // Allocate and initialise window object
   GLFWwindow *window = init_window(window_width, window_height, "CPP | OpenGL | ffmpeg");
 
-  glfwSetKeyCallback(window, key_callback); // Handle key events
+  glfwSetKeyCallback(window, key_callback);                 // Handle key events
   glfwSetMouseButtonCallback(window, mouse_click_callback); // Handle mouse click events
 
   VideoReader *video_reader = video_reader_init();
@@ -118,8 +124,6 @@ int main(int argc, const char **argv)
     return false;
   }
 
-  init_gui(window_width, window_height);
-
   // Start loading frames from the video on another thread
   pthread_t frame_loading_thread;
   int rc;
@@ -130,12 +134,16 @@ int main(int argc, const char **argv)
     printf("Failed to create frame-loading thread, aborting!");
     return (-1);
   }
-  /* SETUP END */
+  /*                      */
 
-  render_loop(window, video_reader);
+  /* RENDER GUI AND VIDEO */
+  render_loop(window, window_width, window_height, video_reader);
+  /*                      */
 
+  /* CLEANUP */
   gui_close();
   video_reader_close(video_reader);
+  /*                      */
 
   return 0;
 }

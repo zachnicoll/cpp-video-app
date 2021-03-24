@@ -43,6 +43,29 @@ struct Rect
   float x1, y1, x2, y2;
 };
 
+/**
+ * Exception called when video_reader_init() fails in some way. Reason
+ * for exception can be given in constructor.
+ */
+class VideoReaderException : public std::exception
+{
+public:
+  const char *reason;
+
+  VideoReaderException(const char *_reason)
+  {
+    reason = _reason;
+  }
+
+  virtual const char *what() const throw()
+  {
+    char *buff = new char[1024];
+    sprintf(buff, "VideoReaderException: %s\n", reason);
+    return buff;
+  }
+};
+
+// TODO: Replace all occurences of this by throwing VideoReaderException
 bool handle_error(int err);
 
 /**
@@ -129,27 +152,22 @@ void frame_queue_cleanup(FrameNode *node);
  */
 void *load_frames_thread(void *vid_reader);
 
+/**
+ * Wrapper for calling GUI.RenderGUI().
+ */
 void render_gui(float window_width, float window_height);
 
-class VideoReaderException : public std::exception
-{
-public:
-  const char *reason;
-
-  VideoReaderException(const char *_reason)
-  {
-    reason = _reason;
-  }
-
-  virtual const char *what() const throw()
-  {
-    char *buff = new char[1024];
-    sprintf(buff, "VideoReaderException: %s\n", reason);
-    return buff;
-  }
-};
-
+/**
+ * Allocate and add all GUI elements to the singleton GUI instance.
+ */
 void init_gui(float window_width, float window_height);
-void render_gui(float window_width, float window_height);
+
+/**
+ * Wrapper for calling GUI.GetClickedElement() and running that elements OnClick() function.
+ */
 Rect* handle_gui_click(float x_pos, float y_pos);
+
+/**
+ * Wrapper for calling GUI.DestroyGUI().
+ */
 void gui_close();

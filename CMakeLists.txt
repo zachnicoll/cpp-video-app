@@ -42,8 +42,8 @@ endif()
 list(APPEND SOURCES
   "src/main.cpp"
   "src/helpers.cpp"
-  "src/video_reader.cpp"
-  "src/frame_queue.cpp"
+  "src/video-reader/video_reader.cpp"
+  "src/video-reader/frame_queue.cpp"
   "src/gui/gui.cpp"
 )
 
