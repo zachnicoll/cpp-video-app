@@ -38,6 +38,11 @@ struct VideoReader
   int frame_queue_length;
 };
 
+struct Rect
+{
+  float x1, y1, x2, y2;
+};
+
 bool handle_error(int err);
 
 /**
@@ -143,3 +148,8 @@ public:
     return buff;
   }
 };
+
+void init_gui(float window_width, float window_height);
+void render_gui(float window_width, float window_height);
+Rect* handle_gui_click(float x_pos, float y_pos);
+void gui_close();

@@ -17,66 +17,24 @@ void mouse_click_callback(GLFWwindow *window, int button, int action, int mods)
     //getting cursor position
     glfwGetCursorPos(window, &xpos, &ypos);
     std::cout << "Cursor Position at " << xpos << "," << ypos << std::endl;
+
+    Rect *clicked_element = handle_gui_click(xpos, ypos);
+    if (clicked_element != NULL) {
+      std::cout << "Clicked element with x1,y1,x2,y2: " << clicked_element->x1 << ',' << clicked_element->x2 << ',' << clicked_element->y1 << ',' << clicked_element->y2 << std::endl;
+    }
   }
 }
 
-int main(int argc, const char **argv)
+void render_loop(GLFWwindow *window, VideoReader *video_reader)
 {
-  /* SETUP START */
-  if (!glfwInit())
-  {
-    printf("Couldn't initialise GLFW!");
-    return 1;
-  }
+  GLuint tex_handle; // Texture handle
+  FrameNode *frame_node = NULL; // Current frame node ptr
+  float inv_scale = 1.5; // Scale video width and height
 
-  // Allocate and initialise window object
-  GLFWwindow *window = init_window(1280, 720, "CPP | OpenGL | ffmpeg");
-
-  // Handle key events
-  glfwSetKeyCallback(window, key_callback);
-
-  glfwSetMouseButtonCallback(window, mouse_click_callback);
-
-  FrameNode *frame_node = NULL;
-  const char *filename = "/home/zach/Desktop/vid.mp4"; // Change this to load a different file
-
-  VideoReader *video_reader = video_reader_init();
-
-  try
-  {
-    video_reader_open(video_reader, filename);
-  }
-  catch (std::exception &e)
-  {
-    printf("An exception occured opening %s:\n%s", filename, e.what());
-    return false;
-  }
-
-  // Create texture handle
-  GLuint tex_handle;
   glGenTextures(1, &tex_handle);
-
-  // Bind texture handle to GL_TEXTURE_2D,
-  // this is the texture GL will use to draw 2D now
-  glBindTexture(GL_TEXTURE_2D, tex_handle);
+  glBindTexture(GL_TEXTURE_2D, tex_handle); // Bind texture handle to GL_TEXTURE_2D, this is the texture GL will use to draw 2D now
 
   init_params();
-
-  // Start loading frames from the video on another thread
-  pthread_t frame_loading_thread;
-  int rc;
-  rc = pthread_create(&frame_loading_thread, NULL, load_frames_thread, video_reader);
-
-  if (rc)
-  {
-    printf("Failed to create frame-loading thread, aborting!");
-    return (-1);
-  }
-
-  /* SETUP END */
-
-  int err = 0;
-  float inv_scale = 1.5;
 
   while (!glfwWindowShouldClose(window))
   {
@@ -127,7 +85,56 @@ int main(int argc, const char **argv)
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
+}
 
+int main(int argc, const char **argv)
+{
+  /* SETUP START */
+  if (!glfwInit())
+  {
+    printf("Couldn't initialise GLFW!");
+    return 1;
+  }
+
+  const int window_width = 1280;
+  const int window_height = 720;
+  const char *filename = "/home/zach/Desktop/vid3.mp4"; // Change this to load a different file
+
+  // Allocate and initialise window object
+  GLFWwindow *window = init_window(window_width, window_height, "CPP | OpenGL | ffmpeg");
+
+  glfwSetKeyCallback(window, key_callback); // Handle key events
+  glfwSetMouseButtonCallback(window, mouse_click_callback); // Handle mouse click events
+
+  VideoReader *video_reader = video_reader_init();
+
+  try
+  {
+    video_reader_open(video_reader, filename);
+  }
+  catch (std::exception &e)
+  {
+    printf("An exception occured opening %s:\n%s", filename, e.what());
+    return false;
+  }
+
+  init_gui(window_width, window_height);
+
+  // Start loading frames from the video on another thread
+  pthread_t frame_loading_thread;
+  int rc;
+  rc = pthread_create(&frame_loading_thread, NULL, load_frames_thread, video_reader);
+
+  if (rc)
+  {
+    printf("Failed to create frame-loading thread, aborting!");
+    return (-1);
+  }
+  /* SETUP END */
+
+  render_loop(window, video_reader);
+
+  gui_close();
   video_reader_close(video_reader);
 
   return 0;

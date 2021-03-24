@@ -44,7 +44,7 @@ list(APPEND SOURCES
   "src/helpers.cpp"
   "src/video_reader.cpp"
   "src/frame_queue.cpp"
-  "src/gui.cpp"
+  "src/gui/gui.cpp"
 )
 
 # Add main.cpp to the executable
