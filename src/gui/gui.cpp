@@ -1,5 +1,7 @@
 #include "../headers.h"
+#include "../globals.h"
 #include "gui.hpp"
+#include "gui-callbacks.hpp"
 
 void reset_colour()
 {
@@ -40,25 +42,16 @@ void init_gui(float window_width, float window_height)
     y1 : 0,
     x2 : window_width,
     y2 : 30,
+    on_click: on_toolbar_click,
   };
 
   Rect* play_button = new Rect{
-    x1 : 50,
-    y1 : 35,
-    x2 : 100,
-    y2 : 65
+    x1 : window_width/2 - 25,
+    y1 : 50,
+    x2 : window_width/2 + 25,
+    y2 : 100,
+    on_click: on_play_button_click,
   };
-
-  for (int i = 0; i < 100; i++) {
-    Rect* dummy_elem = new Rect{
-      x1 : 10.0f + i,
-      y1 : 10.0f,
-      x2 : 50.0f + i,
-      y2 : 50.0f
-    };
-
-    gui_controller->AddGUIElement(dummy_elem);
-  }
 
   gui_controller->AddGUIElement(toolbar);
   gui_controller->AddGUIElement(play_button);
@@ -75,12 +68,14 @@ void render_gui(float window_width, float window_height)
   reset_colour();
 }
 
-Rect* handle_gui_click(float x_pos, float y_pos) {
+void handle_gui_click(float x_pos, float y_pos) {
   GUI* gui_controller = GUI::GetInstance();
-  return gui_controller->GetClickedElement(x_pos, y_pos);
-  /**
-   * TODO: Call a function assigned to the element on click
-   */
+  Rect* clicked_element = gui_controller->GetClickedElement(x_pos, y_pos);
+
+  if (clicked_element != NULL)
+  {
+    clicked_element->on_click();
+  }
 }
 
 void gui_close()

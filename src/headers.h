@@ -41,6 +41,7 @@ struct VideoReader
 struct Rect
 {
   float x1, y1, x2, y2;
+  void (*on_click)(void);
 };
 
 /**
@@ -165,9 +166,11 @@ void init_gui(float window_width, float window_height);
 /**
  * Wrapper for calling GUI.GetClickedElement() and running that elements OnClick() function.
  */
-Rect* handle_gui_click(float x_pos, float y_pos);
+void handle_gui_click(float x_pos, float y_pos);
 
 /**
  * Wrapper for calling GUI.DestroyGUI().
  */
 void gui_close();
+
+void on_play_button_click();

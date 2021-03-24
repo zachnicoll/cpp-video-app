@@ -42,9 +42,12 @@ endif()
 list(APPEND SOURCES
   "src/main.cpp"
   "src/helpers.cpp"
+  "src/globals.cpp"
   "src/video-reader/video_reader.cpp"
   "src/video-reader/frame_queue.cpp"
   "src/gui/gui.cpp"
+  "src/gui/gui-methods.cpp"
+  "src/gui/gui-callbacks.cpp"
 )
 
 # Add main.cpp to the executable

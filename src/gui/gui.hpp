@@ -31,7 +31,7 @@ public:
    * Singletons should not be cloneable.
    */
   GUI(GUI &other) = delete;
-  
+
   /**
    * Singletons should not be assignable.
    */
@@ -42,70 +42,26 @@ public:
    * object if one does not already exist.
    * @returns pointer to shared GUI object instance
    */
-  static GUI *GetInstance()
-  {
-    if (singleton_ == nullptr)
-    {
-      singleton_ = new GUI();
-    }
-    return singleton_;
-  }
+  static GUI *GetInstance();
 
   /**
    * Add element to stored vector of elements.
    */
-  void AddGUIElement(Rect *element)
-  {
-    gui_elements.push_back(element);
-  }
+  void AddGUIElement(Rect *element);
 
   /**
    * Find which GUI element the mouse (x, y) position falls within.
    * @returns pointer to GUI element that was clicked
    */
-  Rect *GetClickedElement(float x_pos, float y_pos)
-  {
-    for (Rect *element : gui_elements)
-    {
-      // Check if mouse position is inside rectangle bounds
-      if (
-          x_pos > element->x1 &&
-          x_pos < element->x2 &&
-          y_pos > element->y1 &&
-          y_pos < element->y2)
-      {
-        return element;
-      }
-    }
-
-    // Nothing was clicked
-    return NULL;
-  }
+  Rect *GetClickedElement(float x_pos, float y_pos);
 
   /**
    * Render all stored GUI elements.
    */
-  void RenderGUI()
-  {
-    for (Rect *elem : gui_elements)
-    {
-      draw_rect(elem);
-    }
-  }
+  void RenderGUI();
 
   /**
    * Free all GUI elements and erase all GUI* from the stored vector.
    */
-  void DestroyGUI()
-  {
-    for (Rect *elem : gui_elements)
-    {
-      delete elem;
-    }
-
-    gui_elements.erase(gui_elements.begin(), gui_elements.end());
-  }
+  void DestroyGUI();
 };
-
-// Shared singleton instance of the GUI class
-GUI *GUI::singleton_ = nullptr;

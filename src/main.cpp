@@ -1,7 +1,5 @@
 #include "headers.h"
-
-/* GLOBALS */
-bool play_video = false;
+#include "globals.h"
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
@@ -17,16 +15,7 @@ void mouse_click_callback(GLFWwindow *window, int button, int action, int mods)
     glfwGetCursorPos(window, &xpos, &ypos);
     std::cout << "Cursor Position at " << xpos << "," << ypos << std::endl;
 
-    Rect *clicked_element = handle_gui_click(xpos, ypos);
-    if (clicked_element != NULL)
-    {
-      std::cout << 
-      "Clicked element with x1, y1, x2, y2: " 
-      << clicked_element->x1 << ", "
-      << clicked_element->y1 << ", "
-      << clicked_element->x2 << ", "
-      << clicked_element->y2 << std::endl;
-    }
+    handle_gui_click(xpos, ypos);
   }
 }
 
@@ -41,6 +30,10 @@ void render_loop(GLFWwindow *window, int window_width, int window_height, VideoR
 
   init_params();                         // Initialise OpenGL params
   init_gui(window_width, window_height); // Allocate and create all GUI objects
+
+  // Load first frame, after there are frames to load
+  while (video_reader->frame_queue_length < 2) {}
+  frame_queue_consume(video_reader, &frame_node);
 
   while (!glfwWindowShouldClose(window))
   {
@@ -105,6 +98,7 @@ int main(int argc, const char **argv)
   const int window_width = 1280;
   const int window_height = 720;
   const char *filename = "/home/zach/Desktop/vid3.mp4"; // Change this to load a different file
+  play_video = false;
 
   // Allocate and initialise window object
   GLFWwindow *window = init_window(window_width, window_height, "CPP | OpenGL | ffmpeg");
