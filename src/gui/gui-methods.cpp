@@ -1,6 +1,45 @@
 #include "../headers.h"
 #include "gui.hpp"
 
+void Rect::Draw()
+{
+  float height = this->y1 - this->y2;
+
+  glBegin(GL_QUADS);
+
+  // top left
+  glTexCoord2f(0.0f, 1.0f);
+  glVertex3f(this->x1, this->y1, 0.0f);
+
+  // bottom left
+  glTexCoord2f(0.0f, 0.0f);
+  glVertex3f(this->x1, this->y2, 0.0f);
+
+  // bottom right
+  glTexCoord2f(1.0f, 0.0f);
+  glVertex3f(this->x2, this->y2, 0.0f);
+
+  // top right
+  glTexCoord2f(1.0f, 1.0f);
+  glVertex3f(this->x2, this->y1, 0.0f);
+
+  glEnd();
+}
+
+bool Rect::CheckClicked(float x_pos, float y_pos)
+{
+  if (
+      x_pos > x1 &&
+      x_pos < x2 &&
+      y_pos > y1 &&
+      y_pos < y2)
+  {
+    return true;
+  }
+
+  return false;
+}
+
 // Shared singleton instance of the GUI class
 GUI *GUI::singleton_ = nullptr;
 
@@ -13,21 +52,17 @@ GUI *GUI::GetInstance()
   return singleton_;
 }
 
-void GUI::AddGUIElement(Rect *element)
+void GUI::AddGUIElement(GUIElement *element)
 {
   gui_elements.push_back(element);
 }
 
-Rect *GUI::GetClickedElement(float x_pos, float y_pos)
+GUIElement *GUI::GetClickedElement(float x_pos, float y_pos)
 {
-  for (Rect *element : gui_elements)
+  for (GUIElement *element : gui_elements)
   {
     // Check if mouse position is inside rectangle bounds
-    if (
-        x_pos > element->x1 &&
-        x_pos < element->x2 &&
-        y_pos > element->y1 &&
-        y_pos < element->y2)
+    if (element->CheckClicked(x_pos, y_pos))
     {
       return element;
     }
@@ -39,15 +74,15 @@ Rect *GUI::GetClickedElement(float x_pos, float y_pos)
 
 void GUI::RenderGUI()
 {
-  for (Rect *elem : gui_elements)
+  for (GUIElement *elem : gui_elements)
   {
-    draw_rect(elem);
+    elem->Draw();
   }
 }
 
 void GUI::DestroyGUI()
 {
-  for (Rect *elem : gui_elements)
+  for (GUIElement *elem : gui_elements)
   {
     delete elem;
   }

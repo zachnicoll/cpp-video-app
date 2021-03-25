@@ -38,11 +38,11 @@ struct VideoReader
   int frame_queue_length;
 };
 
-struct Rect
-{
-  float x1, y1, x2, y2;
-  void (*on_click)(void);
-};
+// struct Rect
+// {
+//   float x1, y1, x2, y2;
+//   void (*on_click)(void);
+// };
 
 /**
  * Exception called when video_reader_init() fails in some way. Reason
