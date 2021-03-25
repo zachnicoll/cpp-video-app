@@ -28,11 +28,13 @@ void render_loop(GLFWwindow *window, int window_width, int window_height, VideoR
   glGenTextures(1, &tex_handle);
   glBindTexture(GL_TEXTURE_2D, tex_handle); // Bind texture handle to GL_TEXTURE_2D, this is the texture GL will use to draw 2D now
 
-  init_params();                         // Initialise OpenGL params
-  init_gui(window_width, window_height); // Allocate and create all GUI objects
+  init_params();                                      // Initialise OpenGL params
+  init_gui(window_width, window_height, &tex_handle); // Allocate and create all GUI objects
 
   // Load first frame, after there are frames to load
-  while (video_reader->frame_queue_length < 2) {}
+  while (video_reader->frame_queue_length < 2)
+  {
+  }
   frame_queue_consume(video_reader, &frame_node);
 
   while (!glfwWindowShouldClose(window))
@@ -64,9 +66,6 @@ void render_loop(GLFWwindow *window, int window_width, int window_height, VideoR
     // Set matrix mode to model view so we can start rendering things
     glMatrixMode(GL_MODELVIEW);
 
-    // Render GUI
-    render_gui((float)fb_w, (float)fb_h);
-
     float video_tex_width = (float)video_reader->width * 0.8;
     float video_tex_height = (float)video_reader->height * 0.8;
 
@@ -79,6 +78,9 @@ void render_loop(GLFWwindow *window, int window_width, int window_height, VideoR
         fb_w / 2 - video_tex_width / (2 * inv_scale),
         125,
         inv_scale);
+
+    // Rende all GUI elements
+    render_gui((float)fb_w, (float)fb_h);
 
     // Swap front and back render buffers
     glfwSwapBuffers(window);

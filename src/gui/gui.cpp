@@ -8,7 +8,7 @@ void reset_colour()
   glColor3f(1.0, 1.0, 1.0);
 }
 
-void init_gui(float window_width, float window_height)
+void init_gui(float window_width, float window_height, GLuint* tex_handle)
 {
   GUI *gui_controller = GUI::GetInstance();
 
@@ -26,28 +26,34 @@ void init_gui(float window_width, float window_height)
       100.0f,
       on_play_button_click);
 
+  Texture *test_tex = new Texture(
+    tex_handle,
+    50,
+    50,
+    100,
+    100,
+    "/home/zach/Desktop/playbutton.png",
+    on_tex_click);
+
   gui_controller->AddGUIElement(toolbar);
   gui_controller->AddGUIElement(play_button);
+  gui_controller->AddGUIElement(test_tex);
 }
 
 void render_gui(float window_width, float window_height)
 {
   GUI *gui_controller = GUI::GetInstance();
-
-  glColor3f(1.0, 0.0, 0.0);
-
   gui_controller->RenderGUI();
-
-  reset_colour();
 }
 
 void handle_gui_click(float x_pos, float y_pos)
 {
   GUI *gui_controller = GUI::GetInstance();
-  Rect *clicked_element = (Rect *)gui_controller->GetClickedElement(x_pos, y_pos);
+  GUIElement *clicked_element = gui_controller->GetClickedElement(x_pos, y_pos);
 
   if (clicked_element != NULL)
   {
+    
     clicked_element->OnClick();
   }
 }

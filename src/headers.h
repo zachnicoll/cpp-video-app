@@ -6,6 +6,7 @@
 #include <iostream>
 #include <pthread.h>
 #include <exception>
+#include <string>
 
 extern "C"
 {
@@ -37,12 +38,6 @@ struct VideoReader
   FrameNode *frame_queue;
   int frame_queue_length;
 };
-
-// struct Rect
-// {
-//   float x1, y1, x2, y2;
-//   void (*on_click)(void);
-// };
 
 /**
  * Exception called when video_reader_init() fails in some way. Reason
@@ -161,7 +156,7 @@ void render_gui(float window_width, float window_height);
 /**
  * Allocate and add all GUI elements to the singleton GUI instance.
  */
-void init_gui(float window_width, float window_height);
+void init_gui(float window_width, float window_height, GLuint* tex_handle);
 
 /**
  * Wrapper for calling GUI.GetClickedElement() and running that elements OnClick() function.

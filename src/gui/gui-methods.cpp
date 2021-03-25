@@ -1,10 +1,21 @@
 #include "../headers.h"
 #include "gui.hpp"
+#include <fstream>
+
+Rect::Rect(float _x1, float _y1, float _x2, float _y2, void (*on_click)())
+{
+  x1 = _x1;
+  y1 = _y1;
+  x2 = _x2;
+  y2 = _y2;
+  OnClickFunc = on_click;
+}
 
 void Rect::Draw()
 {
   float height = this->y1 - this->y2;
 
+  glColor3f(1.0, 0.0, 0.0);
   glBegin(GL_QUADS);
 
   // top left
@@ -24,6 +35,7 @@ void Rect::Draw()
   glVertex3f(this->x2, this->y1, 0.0f);
 
   glEnd();
+  reset_colour();
 }
 
 bool Rect::CheckClicked(float x_pos, float y_pos)
@@ -33,6 +45,72 @@ bool Rect::CheckClicked(float x_pos, float y_pos)
       x_pos < x2 &&
       y_pos > y1 &&
       y_pos < y2)
+  {
+    return true;
+  }
+
+  return false;
+}
+
+Texture::Texture(GLuint *_tex_handle, float _pos_x, float _pos_y, float _width, float _height, std::string _filename, void (*on_click)())
+{
+  pos_x = _pos_x;
+  pos_y = _pos_y;
+  width = _width;
+  height = _height;
+  filename = _filename;
+  tex_handle = _tex_handle;
+  OnClickFunc = on_click;
+
+  std::ifstream file;
+  file.open(filename);
+
+  if (!file.is_open())
+  {
+    throw new std::exception();
+  }
+
+  file.close();
+}
+
+void Texture::Draw()
+{
+  int _width = (int)width;
+  int _height = (int)height;
+
+  uint8_t data[_width * _height * 3];
+
+  for (int x = 0; x < _width; x++)
+  {
+    for (int y = 0; y < _height; y++)
+    {
+      data[x * _width * 3 + y * 3] = 0x00;
+      data[x * _width * 3 + y * 3 + 1] = 0xff;
+      data[x * _width * 3 + y * 3 + 2] = 0xff;
+    }
+  }
+
+  // // TODO: change GL_RGB to GL_RGBA
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+  render_tex(
+      tex_handle,
+      width,
+      height,
+      pos_x,
+      pos_y,
+      1);
+
+  // free(data);
+}
+
+bool Texture::CheckClicked(float x_pos, float y_pos)
+{
+  if (
+      x_pos > pos_x &&
+      x_pos < pos_x + width &&
+      y_pos > pos_y &&
+      y_pos < pos_y + height)
   {
     return true;
   }
