@@ -52,65 +52,77 @@ bool Rect::CheckClicked(float x_pos, float y_pos)
   return false;
 }
 
-Texture::Texture(GLuint *_tex_handle, float _pos_x, float _pos_y, float _width, float _height, std::string _filename, void (*on_click)())
+Texture::Texture(GLuint *_tex_handle, float _pos_x, float _pos_y, float _scale, std::string _filename, void (*on_click)())
 {
   pos_x = _pos_x;
   pos_y = _pos_y;
-  width = _width;
-  height = _height;
+  scale = _scale;
   filename = _filename;
   tex_handle = _tex_handle;
   OnClickFunc = on_click;
 
-  std::ifstream file;
-  file.open(filename);
+  unsigned w, h;
 
-  if (!file.is_open())
+  //decode
+  unsigned error = lodepng::decode(image_data, w, h, filename);
+  if (error)
   {
-    throw new std::exception();
+    throw new PNGDecodeException(lodepng_error_text(error));
   }
 
-  file.close();
+  width = w;
+  height = h;
+
+  // Texture size must be power of two for the primitive OpenGL version this is written for. Find next power of two.
+  u2 = 1;
+  while (u2 < width)
+    u2 *= 2;
+  v2 = 1;
+  while (v2 < height)
+    v2 *= 2;
+  // Ratio for power of two version compared to actual version, to render the non power of two image with proper size.
+  u3 = width / u2;
+  v3 = height / v2;
+
+  // Make power of two version of the image.
+  std::vector<unsigned char> image2(u2 * v2 * 4);
+  for (size_t y = 0; y < height; y++)
+    for (size_t x = 0; x < width; x++)
+      for (size_t c = 0; c < 4; c++)
+      {
+        int index = 4 * width * y + 4 * x + c;
+        image2[4 * u2 * y + 4 * x + c] = image_data[index];
+      }
+
+  image_data = image2;
 }
 
 void Texture::Draw()
 {
-  int _width = (int)width;
-  int _height = (int)height;
+  glTexImage2D(GL_TEXTURE_2D, 0, 4, u2, v2, 0, GL_RGBA, GL_UNSIGNED_BYTE, &image_data[0]);
 
-  uint8_t data[_width * _height * 3];
-
-  for (int x = 0; x < _width; x++)
-  {
-    for (int y = 0; y < _height; y++)
-    {
-      data[x * _width * 3 + y * 3] = 0x00;
-      data[x * _width * 3 + y * 3 + 1] = 0xff;
-      data[x * _width * 3 + y * 3 + 2] = 0xff;
-    }
-  }
-
-  // // TODO: change GL_RGB to GL_RGBA
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-
-  render_tex(
-      tex_handle,
-      width,
-      height,
-      pos_x,
-      pos_y,
-      1);
-
-  // free(data);
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, *tex_handle);
+  glBegin(GL_QUADS);
+  glTexCoord2d(0, 0);
+  glVertex2f(pos_x, pos_y);
+  glTexCoord2d(u3, 0);
+  glVertex2f(pos_x + width * scale, pos_y);
+  glTexCoord2d(u3, v3);
+  glVertex2f(pos_x + width * scale, pos_y + height * scale);
+  glTexCoord2d(0, v3);
+  glVertex2f(pos_x, pos_y + height * scale);
+  glEnd();
+  glDisable(GL_TEXTURE_2D);
 }
 
 bool Texture::CheckClicked(float x_pos, float y_pos)
 {
   if (
       x_pos > pos_x &&
-      x_pos < pos_x + width &&
+      x_pos < pos_x + width * scale &&
       y_pos > pos_y &&
-      y_pos < pos_y + height)
+      y_pos < pos_y + height * scale)
   {
     return true;
   }

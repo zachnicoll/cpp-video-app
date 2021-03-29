@@ -40,6 +40,7 @@ else()
 endif()
 
 list(APPEND SOURCES
+  "lib/lodepng/lodepng.cpp"
   "src/main.cpp"
   "src/helpers.cpp"
   "src/globals.cpp"

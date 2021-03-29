@@ -13,6 +13,11 @@ void init_params()
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Method for downscaling image
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Method for upscaling image
   glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+  glDisable(GL_CULL_FACE);
+  glDisable(GL_DEPTH_TEST);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
+  glDisable(GL_ALPHA_TEST);
 }
 
 void render_tex(GLuint *texture_handle, float f_w, float f_h, float xpos, float ypos, float inv_scale)
@@ -81,4 +86,20 @@ void *load_frames_thread(void *vid_reader)
   }
 
   pthread_exit(NULL);
+}
+
+std::vector<unsigned char> *decodePng(std::string filename)
+{
+  std::vector<unsigned char> *image = new std::vector<unsigned char>(); // the raw pixels
+  unsigned width, height;
+
+  //decode
+  unsigned error = lodepng::decode(*image, width, height, filename);
+
+  if (error)
+  {
+    throw new PNGDecodeException(lodepng_error_text(error));
+  }
+
+  return image;
 }

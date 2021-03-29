@@ -7,6 +7,8 @@
 #include <pthread.h>
 #include <exception>
 #include <string>
+#include <vector>
+#include "../lib/lodepng/lodepng.h"
 
 extern "C"
 {
@@ -57,6 +59,24 @@ public:
   {
     char *buff = new char[1024];
     sprintf(buff, "VideoReaderException: %s\n", reason);
+    return buff;
+  }
+};
+
+class PNGDecodeException : public std::exception
+{
+public:
+  const char *reason;
+
+  PNGDecodeException(const char *_reason)
+  {
+    reason = _reason;
+  }
+
+  virtual const char *what() const throw()
+  {
+    char *buff = new char[1024];
+    sprintf(buff, "PNGDecodeException: %s\n", reason);
     return buff;
   }
 };
@@ -156,7 +176,7 @@ void render_gui(float window_width, float window_height);
 /**
  * Allocate and add all GUI elements to the singleton GUI instance.
  */
-void init_gui(float window_width, float window_height, GLuint* tex_handle);
+void init_gui(float window_width, float window_height, GLuint *tex_handle);
 
 /**
  * Wrapper for calling GUI.GetClickedElement() and running that elements OnClick() function.
@@ -168,4 +188,4 @@ void handle_gui_click(float x_pos, float y_pos);
  */
 void gui_close();
 
-void on_play_button_click();
+std::vector<unsigned char> *decodePng(std::string filename);
