@@ -20,7 +20,7 @@ void init_params()
   glDisable(GL_ALPHA_TEST);
 }
 
-void render_tex(GLuint *texture_handle, float f_w, float f_h, float xpos, float ypos, float inv_scale)
+void render_tex(GLuint *texture_handle, float f_w, float f_h, float xpos, float ypos)
 {
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, *texture_handle);
@@ -28,11 +28,11 @@ void render_tex(GLuint *texture_handle, float f_w, float f_h, float xpos, float 
   glTexCoord2d(0, 0);
   glVertex2i(xpos, ypos);
   glTexCoord2d(1, 0);
-  glVertex2i(xpos + f_w / inv_scale, ypos);
+  glVertex2i(xpos + f_w, ypos);
   glTexCoord2d(1, 1);
-  glVertex2i(xpos + f_w / inv_scale, ypos + f_h / inv_scale);
+  glVertex2i(xpos + f_w, ypos + f_h);
   glTexCoord2d(0, 1);
-  glVertex2i(xpos, ypos + f_h / inv_scale);
+  glVertex2i(xpos, ypos + f_h);
   glEnd();
   glDisable(GL_TEXTURE_2D);
 }
@@ -86,20 +86,4 @@ void *load_frames_thread(void *vid_reader)
   }
 
   pthread_exit(NULL);
-}
-
-std::vector<unsigned char> *decodePng(std::string filename)
-{
-  std::vector<unsigned char> *image = new std::vector<unsigned char>(); // the raw pixels
-  unsigned width, height;
-
-  //decode
-  unsigned error = lodepng::decode(*image, width, height, filename);
-
-  if (error)
-  {
-    throw new PNGDecodeException(lodepng_error_text(error));
-  }
-
-  return image;
 }

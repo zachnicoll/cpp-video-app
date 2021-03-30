@@ -66,20 +66,18 @@ void render_loop(GLFWwindow *window, int window_width, int window_height, VideoR
     // Set matrix mode to model view so we can start rendering things
     glMatrixMode(GL_MODELVIEW);
 
-    float video_tex_width = (float)video_reader->width * 0.8;
-    float video_tex_height = (float)video_reader->height * 0.8;
+    float video_tex_width = (float)video_reader->width * 0.5;
+    float video_tex_height = (float)video_reader->height * 0.5;
 
-    // Render stuff
+    // Render current video frame
     render_tex(
         &tex_handle,
         video_tex_width,
         video_tex_height,
-        // Position the texture in the middle of the window
-        fb_w / 2 - video_tex_width / (2 * inv_scale),
-        125,
-        inv_scale);
+        window_width / 2 - video_tex_width / 2,
+        125);
 
-    // Rende all GUI elements
+    // Render all GUI elements
     render_gui((float)fb_w, (float)fb_h);
 
     // Swap front and back render buffers

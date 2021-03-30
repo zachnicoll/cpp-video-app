@@ -37,6 +37,6 @@ mkdir build && cd build && cmake .. && cmake --build . && ./cpp-video-app
 - [ ] Play a video file, synchronised to its correct frame rate
 - [x] Processing and rendering of video frames occuring on different threads
 - [ ] Play audio synchronised with video
-- [ ] Play/Pause button and functionality
+- [x] Play/Pause button and functionality
 - [ ] Seeking (move forward or backwards through video) GUI element and functionality
 - [ ] Full mock video player GUI in OpenGL (for fun)
