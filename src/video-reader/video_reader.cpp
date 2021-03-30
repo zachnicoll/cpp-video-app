@@ -1,4 +1,4 @@
-#include "./video_reader.hpp"
+#include "video_reader.hpp"
 
 void throw_av_error(const char *pretext, int err)
 {
