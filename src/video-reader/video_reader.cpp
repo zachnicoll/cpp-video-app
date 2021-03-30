@@ -1,8 +1,18 @@
-#include "../headers.h"
+#include "./video_reader.hpp"
 
-VideoReader * video_reader_init()
+void throw_av_error(const char *pretext, int err)
 {
-  VideoReader* video_reader = new VideoReader;
+  char *errbuff = new char[1024];
+  char *msgbuff = new char[2048];
+  av_strerror(err, errbuff, 1024);
+  sprintf(msgbuff, "%s %s", pretext, errbuff);
+  VideoReaderException ex(msgbuff);
+  throw ex;
+}
+
+VideoReader *video_reader_init()
+{
+  VideoReader *video_reader = new VideoReader;
   video_reader->av_codec = NULL;
   video_reader->av_codec_ctx = NULL;
   video_reader->av_codec_params = NULL;
@@ -104,10 +114,11 @@ void video_reader_open(VideoReader *video_reader, const char *filename)
   video_reader->height = video_reader->av_codec_ctx->height;
 }
 
-int video_reader_next(VideoReader *video_reader)
+void video_reader_next(VideoReader *video_reader)
 {
-  if (video_reader->frame_queue_length >= MAX_QUEUE_LENGTH) {
-    return 0;
+  if (video_reader->frame_queue_length >= MAX_QUEUE_LENGTH)
+  {
+    return;
   }
 
   int err = 0;
@@ -120,22 +131,18 @@ int video_reader_next(VideoReader *video_reader)
       // Supply decoder with raw packet data
       if ((err = avcodec_send_packet(video_reader->av_codec_ctx, video_reader->av_packet)) < 0)
       {
-        printf("Failed to decode packet!\n");
-        handle_error(err);
-        return -1;
+        throw_av_error("Failed to decode packet!", err);
       }
 
       // Get decoded frame from the decoder
       err = avcodec_receive_frame(video_reader->av_codec_ctx, video_reader->av_frame);
       if (err == AVERROR(EAGAIN) || err == AVERROR_EOF)
       {
-        return err;
+        return;
       }
       else if (err < 0)
       {
-        printf("Failed to decode packet!\n");
-        handle_error(err);
-        return -1;
+        throw_av_error("Failed to get decoded frame from the decoder!\n", err);
       }
     }
 
@@ -144,7 +151,7 @@ int video_reader_next(VideoReader *video_reader)
     {
       video_reader->sws_scaler_ctx = sws_getContext(
           video_reader->width, video_reader->height, video_reader->av_codec_ctx->pix_fmt, // Input formats
-          video_reader->width, video_reader->height, AV_PIX_FMT_RGBA,                    // Output formats
+          video_reader->width, video_reader->height, AV_PIX_FMT_RGBA,                     // Output formats
           SWS_BILINEAR,
           NULL, NULL, NULL);
     }
@@ -154,16 +161,16 @@ int video_reader_next(VideoReader *video_reader)
     // Convert YUV frame colour data to RGBA
     if (!yuv_to_rgba(video_reader, data))
     {
-      return -1;
+      VideoReaderException ex("Failed to convert YUV frame data to RGBA!");
+      throw ex;
     }
 
     frame_queue_push(video_reader, data);
-
-    return 0;
   }
   else
   {
-    return -1;
+    VideoReaderException ex("Failed to read frame!");
+    throw ex;
   }
 }
 

@@ -1,6 +1,6 @@
-#include "../headers.h"
-#include "../globals.h"
-#include "gui-callbacks.hpp"
+#include <iostream>
+#include "../../globals.h"
+#include "../gui.hpp"
 
 void on_toolbar_click()
 {

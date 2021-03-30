@@ -46,9 +46,11 @@ list(APPEND SOURCES
   "src/globals.cpp"
   "src/video-reader/video_reader.cpp"
   "src/video-reader/frame_queue.cpp"
+  "src/gui/texture/texture.cpp"
+  "src/gui/rect/rect.cpp"
+  "src/gui/controller/controller.cpp"
+  "src/gui/callbacks/callbacks.cpp"
   "src/gui/gui.cpp"
-  "src/gui/gui-methods.cpp"
-  "src/gui/gui-callbacks.cpp"
 )
 
 # Add main.cpp to the executable

@@ -37,14 +37,6 @@ void render_tex(GLuint *texture_handle, float f_w, float f_h, float xpos, float 
   glDisable(GL_TEXTURE_2D);
 }
 
-bool handle_error(int err)
-{
-  char *errbuff = new char[1024];
-  av_strerror(err, errbuff, 1024);
-  printf("av_strerror: %s\n", errbuff);
-  return false;
-}
-
 bool yuv_to_rgba(VideoReader *video_reader, uint8_t *data_out)
 {
   if (!video_reader->sws_scaler_ctx)
@@ -55,7 +47,13 @@ bool yuv_to_rgba(VideoReader *video_reader, uint8_t *data_out)
 
   uint8_t *dest[4] = {data_out, 0, 0, 0};
   int dest_linesize[4] = {video_reader->width * 4, 0, 0, 0};
-  sws_scale(video_reader->sws_scaler_ctx, video_reader->av_frame->data, video_reader->av_frame->linesize, 0, video_reader->height, dest, dest_linesize);
+  sws_scale(video_reader->sws_scaler_ctx,
+            video_reader->av_frame->data,
+            video_reader->av_frame->linesize,
+            0,
+            video_reader->height,
+            dest,
+            dest_linesize);
 
   return true;
 }
@@ -77,10 +75,14 @@ void *load_frames_thread(void *vid_reader)
 
   while (true)
   {
-    int err = video_reader_next(video_reader);
-
-    if (err == AVERROR_EOF || (err != AVERROR(EAGAIN) && err < 0))
+    try
     {
+      video_reader_next(video_reader);
+    }
+    catch (VideoReaderException e)
+    {
+      printf("%s", e.what());
+      printf("FAILED TO READ NEXT FRAME FROM VIDEO READER, CLOSING THREAD!\n");
       break;
     }
   }

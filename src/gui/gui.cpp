@@ -1,7 +1,6 @@
 #include "../headers.h"
 #include "../globals.h"
 #include "gui.hpp"
-#include "gui-callbacks.hpp"
 
 void reset_colour()
 {
