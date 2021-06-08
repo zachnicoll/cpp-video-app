@@ -8,7 +8,7 @@ Please feel free to take any of the code you find useful here - this project was
 You will run into various errors while trying to build and run this project if you do not have these dependencies installed:
 ```shell
 sudo apt-get update &&
-sudo apt-get install ffmpeg libavcodec-dev libavformat-dev libavdevice-dev libavfilter-dev libavutil-dev yasm pkg-config libglu1-mesa-dev freeglut3-dev mesa-common-dev libxi-dev libxcursor-dev libxinerama-dev libxrandr-dev libx11-dev doxygen
+sudo apt-get install cmake ffmpeg libavcodec-dev libavformat-dev libavdevice-dev libavfilter-dev libavutil-dev yasm pkg-config libglu1-mesa-dev freeglut3-dev mesa-common-dev libxi-dev libxcursor-dev libxinerama-dev libxrandr-dev libx11-dev doxygen
 ```
 
 Make sure you have CMake installed, [follow this guide](https://cmake.org/install/) if you need help installing it.
