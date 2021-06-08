@@ -114,66 +114,6 @@ void video_reader_open(VideoReader *video_reader, const char *filename)
   video_reader->height = video_reader->av_codec_ctx->height;
 }
 
-void video_reader_next(VideoReader *video_reader)
-{
-  if (video_reader->frame_queue_length >= MAX_QUEUE_LENGTH)
-  {
-    return;
-  }
-
-  int err = 0;
-
-  // Read the next frame from the stream
-  if (av_read_frame(video_reader->av_format_ctx, video_reader->av_packet) >= 0)
-  {
-    if (video_reader->av_packet->stream_index == video_reader->video_stream_index)
-    {
-      // Supply decoder with raw packet data
-      if ((err = avcodec_send_packet(video_reader->av_codec_ctx, video_reader->av_packet)) < 0)
-      {
-        throw_av_error("Failed to decode packet!", err);
-      }
-
-      // Get decoded frame from the decoder
-      err = avcodec_receive_frame(video_reader->av_codec_ctx, video_reader->av_frame);
-      if (err == AVERROR(EAGAIN) || err == AVERROR_EOF)
-      {
-        return;
-      }
-      else if (err < 0)
-      {
-        throw_av_error("Failed to get decoded frame from the decoder!\n", err);
-      }
-    }
-
-    // We can allocate SwsContext now that we know the pix_fmt of the frame
-    if (!video_reader->sws_scaler_ctx)
-    {
-      video_reader->sws_scaler_ctx = sws_getContext(
-          video_reader->width, video_reader->height, video_reader->av_codec_ctx->pix_fmt, // Input formats
-          video_reader->width, video_reader->height, AV_PIX_FMT_RGBA,                     // Output formats
-          SWS_BILINEAR,
-          NULL, NULL, NULL);
-    }
-
-    uint8_t *data = new uint8_t[video_reader->width * video_reader->height * 4];
-
-    // Convert YUV frame colour data to RGBA
-    if (!yuv_to_rgba(video_reader, data))
-    {
-      VideoReaderException ex("Failed to convert YUV frame data to RGBA!");
-      throw ex;
-    }
-
-    frame_queue_push(video_reader, data);
-  }
-  else
-  {
-    VideoReaderException ex("Failed to read frame!");
-    throw ex;
-  }
-}
-
 void video_reader_close(VideoReader *video_reader)
 {
   // Free up avformat data
@@ -191,6 +131,4 @@ void video_reader_close(VideoReader *video_reader)
   {
     sws_freeContext(video_reader->sws_scaler_ctx);
   }
-
-  frame_queue_cleanup(video_reader->frame_queue);
 }

@@ -1,143 +1,114 @@
-#include "headers.h"
-#include "globals.h"
+#include <stdint.h>
+#include <stdio.h>
+#include <iostream>
+#include <exception>
+#include <string>
+#include <unistd.h>
+#include <vector>
+#include <sstream>
+#include "video-reader/video_reader.hpp"
 
-void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
+#define NUMPROFILES 2
+
+typedef struct
 {
-  if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-    play_video = !play_video;
-}
+  int width;
+  int height;
+  int64_t bit_rate;
+} Profile;
 
-void mouse_click_callback(GLFWwindow *window, int button, int action, int mods)
+float convert_to_kpbs(int64_t bit_rate)
 {
-  if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS)
-  {
-    double xpos, ypos;
-    glfwGetCursorPos(window, &xpos, &ypos);
-    std::cout << "Cursor Position at " << xpos << "," << ypos << std::endl;
-
-    handle_gui_click(xpos, ypos);
-  }
-}
-
-void render_loop(GLFWwindow *window, int window_width, int window_height, VideoReader *video_reader)
-{
-  GLuint tex_handle;            // Texture handle
-  FrameNode *frame_node = NULL; // Current frame node ptr
-  float inv_scale = 1.5;        // Scale video width and height
-
-  glGenTextures(1, &tex_handle);
-  glBindTexture(GL_TEXTURE_2D, tex_handle); // Bind texture handle to GL_TEXTURE_2D, this is the texture GL will use to draw 2D now
-
-  init_params();                                      // Initialise OpenGL params
-  init_gui(window_width, window_height, &tex_handle); // Allocate and create all GUI objects
-
-  // Load first frame, after there are frames to load
-  while (video_reader->frame_queue_length < 2)
-  {
-  }
-  frame_queue_consume(video_reader, &frame_node);
-
-  while (!glfwWindowShouldClose(window))
-  {
-    if (play_video)
-    {
-      frame_queue_consume(video_reader, &frame_node); // Load frame into ptr
-    }
-
-    if (frame_node != NULL)
-    {
-      // Create texture from pixel data
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, video_reader->width, video_reader->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, frame_node->frame_data);
-    }
-
-    // Clear screen
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // Get current frame buffer size (window size) to correctly project texture
-    int fb_w, fb_h;
-    glfwGetFramebufferSize(window, &fb_w, &fb_h);
-
-    // Setup orthographic projection
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(0, fb_w, fb_h, 0, -1, 1);
-
-    // Set matrix mode to model view so we can start rendering things
-    glMatrixMode(GL_MODELVIEW);
-
-    float video_tex_width = (float)video_reader->width * 0.5;
-    float video_tex_height = (float)video_reader->height * 0.5;
-
-    // Render current video frame
-    render_tex(
-        &tex_handle,
-        video_tex_width,
-        video_tex_height,
-        window_width / 2 - video_tex_width / 2,
-        125);
-
-    // Render all GUI elements
-    render_gui((float)fb_w, (float)fb_h);
-
-    // Swap front and back render buffers
-    glfwSwapBuffers(window);
-    glfwPollEvents();
-  }
+  return (float)bit_rate / 1000.0;
 }
 
 int main(int argc, const char **argv)
 {
-  /* SETUP */
-  if (!glfwInit())
-  {
-    printf("Couldn't initialise GLFW!");
-    return 1;
-  }
-
-  const int window_width = 1280;
-  const int window_height = 720;
-  const char *filename = "/home/zach/Desktop/vid3.mp4"; // Change this to load a different file
-  play_video = false;
-
-  // Allocate and initialise window object
-  GLFWwindow *window = init_window(window_width, window_height, "CPP | OpenGL | ffmpeg");
-
-  glfwSetKeyCallback(window, key_callback);                 // Handle key events
-  glfwSetMouseButtonCallback(window, mouse_click_callback); // Handle mouse click events
+  // TODO: Get these from argv
+  const char *input_file = "/home/zach/Downloads/vid.mp4"; // Change this to load a different file
+  const char *output_file = "/home/zach/Videos/output.mp4";            // Change this to output different filename
 
   VideoReader *video_reader = video_reader_init();
 
   try
   {
-    video_reader_open(video_reader, filename);
+    video_reader_open(video_reader, input_file);
   }
   catch (std::exception &e)
   {
-    printf("An exception occured opening %s:\n%s", filename, e.what());
+    printf("An exception occured opening %s:\n%s", input_file, e.what());
     return false;
   }
 
-  // Start loading frames from the video on another thread
-  pthread_t frame_loading_thread;
-  int rc;
-  rc = pthread_create(&frame_loading_thread, NULL, load_frames_thread, video_reader);
+  int base_width = video_reader->width;
+  int base_height = video_reader->height;
+  int64_t base_bit_rate = video_reader->av_codec_ctx->bit_rate;
+  int bit_rate_tolerance = video_reader->av_codec_ctx->bit_rate_tolerance;
 
-  if (rc)
-  {
-    printf("Failed to create frame-loading thread, aborting!");
-    return (-1);
-  }
-  /*                      */
-
-  /* RENDER GUI AND VIDEO */
-  render_loop(window, window_width, window_height, video_reader);
-  /*                      */
-
-  /* CLEANUP */
-  gui_close();
   video_reader_close(video_reader);
-  /*                      */
+
+  printf("----Base Video Information----\n\n");
+  printf("Video Dimensions: %d x %d\n", base_width, base_height);
+  printf("Average Video Bit Rate: %f kbps\n", convert_to_kpbs(base_bit_rate));
+  printf("Video Bit Rate Tolerance: %f kbps\n", convert_to_kpbs(bit_rate_tolerance));
+
+  // Perform some arbitrary operation to create desired profiles
+  Profile profile_1;
+  profile_1.width = base_width * 0.8;
+  profile_1.height = base_height * 0.8;
+  profile_1.bit_rate = base_bit_rate * 0.5;
+
+  Profile profile_2;
+  profile_2.width = base_width * 0.5;
+  profile_2.height = base_height * 0.5;
+  profile_2.bit_rate = base_bit_rate * 0.75;
+
+  Profile profiles[NUMPROFILES];
+  profiles[0] = profile_1;
+  profiles[1] = profile_2;
+
+  printf("\n----Available Profiles----\n\n");
+
+  for (int i = 0; i < NUMPROFILES; i++)
+  {
+    printf("[%d]: %d x %d, %d kbps\n", i, profiles[i].width, profiles[i].height, (int)convert_to_kpbs(profiles[i].bit_rate));
+  }
+
+  printf("Choose profile: ");
+  int selected_profile;
+  std::cin >> selected_profile;
+
+  if (selected_profile < 0 || selected_profile >= NUMPROFILES)
+  {
+    printf("\nInvalid profile choice, aborting!\n");
+    return -1;
+  }
+
+  printf("Executing ffmpeg with selected profile...\n\n");
+
+  // Convert bit rate to kbps
+  int kbps_bit_rate = (int)convert_to_kpbs(profiles[selected_profile].bit_rate);
+
+  std::ostringstream arg_oss;
+
+  // Input file
+  arg_oss << "ffmpeg " << "-i " << input_file << " ";
+
+  // Bit rate
+  arg_oss << "-b:v " << kbps_bit_rate << "k "
+                   << "-bufsize " << kbps_bit_rate << "k" << " ";
+
+  // Scale (width & height)
+  arg_oss << "-vf scale=" << profiles[selected_profile].width << ":" << profiles[selected_profile].height << " ";
+  
+  // Output file
+  arg_oss << output_file;
+
+  /**
+   * Should execute ffmpeg with following opts:
+   * ffmpeg -i input.avi -b:v 64k -bufsize 64k -vf scale=320:240 output.avi
+   */
+  system(arg_oss.str().c_str());
 
   return 0;
 }
