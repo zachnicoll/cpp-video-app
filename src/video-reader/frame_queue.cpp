@@ -23,9 +23,12 @@ void frame_queue_push(VideoReader *video_reader, uint8_t *new_frame)
 
       // Set last node's frame_data to new frame data
       node->frame_data = new_frame;
+      node->presentation_time = (double)video_reader->av_frame->pts *
+                                ((double)video_reader->av_format_ctx->streams[video_reader->video_stream_index]->time_base.num /
+                                 (double)video_reader->av_format_ctx->streams[video_reader->video_stream_index]->time_base.den);
 
       // Set last node's next_frame to an empty FrameNode
-      node->next_frame = new FrameNode{NULL, NULL};
+      node->next_frame = new FrameNode{NULL, NULL, 0};
     }
 
     // Increase queue length so we know how many frames there are

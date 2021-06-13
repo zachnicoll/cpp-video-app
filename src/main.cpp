@@ -37,12 +37,28 @@ void render_loop(GLFWwindow *window, int window_width, int window_height, VideoR
   }
   frame_queue_consume(video_reader, &frame_node);
 
+  glfwSetTime(0.0);
+  double last_time = glfwGetTime();
+
   while (!glfwWindowShouldClose(window))
   {
+    // Time since glfwSetTime()
+    double current_time = glfwGetTime();
+
     if (play_video)
     {
-      frame_queue_consume(video_reader, &frame_node); // Load frame into ptr
+      // Add difference in loop execution time to play time
+      play_time += current_time - last_time;
+
+      // Only consume the current frame if it should be presented now
+      if (play_time >= video_reader->frame_queue->presentation_time)
+      {
+        frame_queue_consume(video_reader, &frame_node); // Load frame into ptr
+      }
     }
+
+    // Keep track of this loop's time for next loop
+    last_time = current_time;
 
     if (frame_node != NULL)
     {

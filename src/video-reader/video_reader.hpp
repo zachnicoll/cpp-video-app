@@ -15,6 +15,7 @@ struct FrameNode
 {
   uint8_t *frame_data;
   FrameNode *next_frame;
+  double presentation_time;
 };
 
 struct VideoReader
