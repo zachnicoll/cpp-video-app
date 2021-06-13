@@ -1,4 +1,5 @@
 #include "video_reader.hpp"
+#include "../globals.h"
 
 void throw_av_error(const char *pretext, int err)
 {
@@ -192,5 +193,27 @@ void video_reader_close(VideoReader *video_reader)
     sws_freeContext(video_reader->sws_scaler_ctx);
   }
 
+  frame_queue_cleanup(video_reader->frame_queue);
+}
+
+void seek_to_time(VideoReader* video_reader, double seconds)
+{
+  if (seconds < 0.0)
+  {
+    seconds = 0.0;
+  }
+
+  int64_t timestamp = seconds / ((double)video_reader->av_format_ctx->streams[video_reader->video_stream_index]->time_base.num /
+                                 (double)video_reader->av_format_ctx->streams[video_reader->video_stream_index]->time_base.den);
+  av_seek_frame(
+    video_reader->av_format_ctx, 
+    video_reader->video_stream_index,
+    timestamp,
+    0
+  );
+
+  play_time = seconds;
+
+  //TODO: Use a mutex to stop seg faults with frame loader thread
   frame_queue_cleanup(video_reader->frame_queue);
 }

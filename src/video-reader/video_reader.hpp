@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef VIDEO_READER
+#define VIDEO_READER
+
 #include <stdint.h>
 #include <stdio.h>
 #include <iostream>
@@ -113,3 +118,10 @@ void frame_queue_cleanup(FrameNode *node);
  * the exception reason, based on provided err int.
  */
 void throw_av_error(const char *pretext, int err);
+
+/**
+ * Seek to a given time, in seconds, in the video. Also mutates play_time to
+ * reflect the desied seek time.
+ */
+void seek_to_time(VideoReader* video_reader, double seconds);
+#endif

@@ -3,8 +3,20 @@
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-  if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-    play_video = !play_video;
+  if (action == GLFW_PRESS) {
+    switch (key)
+    {
+    case GLFW_KEY_SPACE:
+      play_video = !play_video;
+      break;
+    case GLFW_KEY_RIGHT:
+      seek_to_time(global_video_reader_handle, play_time + 5.0);
+    case GLFW_KEY_LEFT:
+      seek_to_time(global_video_reader_handle, play_time - 5.0);
+    default:
+      break;
+    }
+  }    
 }
 
 void mouse_click_callback(GLFWwindow *window, int button, int action, int mods)
@@ -29,7 +41,7 @@ void render_loop(GLFWwindow *window, int window_width, int window_height, VideoR
   glBindTexture(GL_TEXTURE_2D, tex_handle); // Bind texture handle to GL_TEXTURE_2D, this is the texture GL will use to draw 2D now
 
   init_params();                                      // Initialise OpenGL params
-  init_gui(window_width, window_height, &tex_handle); // Allocate and create all GUI objects
+  init_gui(window_width, window_height, &tex_handle); // Allocate and create all GUI objects 
 
   // Load first frame, after there are frames to load
   while (video_reader->frame_queue_length < 2)
@@ -123,6 +135,7 @@ int main(int argc, const char **argv)
   glfwSetMouseButtonCallback(window, mouse_click_callback); // Handle mouse click events
 
   VideoReader *video_reader = video_reader_init();
+  global_video_reader_handle = video_reader;
 
   try
   {
