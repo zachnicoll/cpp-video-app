@@ -23,7 +23,7 @@ void init_gui(float window_width, float window_height, GLuint *tex_handle)
       window_width / 2 - 200 * 0.4,
       40,
       0.4,
-      "/home/zach/Desktop/playbutton.png",
+      "/home/zach/repos/cpp-video-app/assets/playbutton.png",
       on_play_button_click);
 
   gui_controller->AddGUIElement(toolbar);

@@ -97,7 +97,7 @@ int main(int argc, const char **argv)
 
   const int window_width = 1280;
   const int window_height = 720;
-  const char *filename = "/home/zach/Desktop/vid3.mp4"; // Change this to load a different file
+  const char *filename = "/home/zach/Downloads/vid.mp4"; // Change this to load a different file
   play_video = false;
 
   // Allocate and initialise window object

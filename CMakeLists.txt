@@ -1,7 +1,7 @@
 # Project Settings
 cmake_minimum_required(VERSION 3.14)
 project(cpp-video-app C CXX)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 # Don't build GLFW docs, tests, & exmaples
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
